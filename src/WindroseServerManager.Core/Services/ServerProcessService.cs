@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WindroseServerManager.Core.Models;
 
@@ -14,7 +15,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
     private readonly IServerEventLog _events;
     private readonly IWindrosePlusService _windrosePlus;
     private readonly IServerConfigService _config;
-    private readonly IConflictScannerService _conflictScanner;
+    private readonly IServiceProvider _serviceProvider;
     private readonly object _lock = new();
 
     private readonly ConcurrentQueue<ServerLogLine> _logBuffer = new();
@@ -28,14 +29,14 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         IServerEventLog events,
         IWindrosePlusService windrosePlus,
         IServerConfigService config,
-        IConflictScannerService conflictScanner)
+        IServiceProvider serviceProvider)
     {
         _logger = logger;
         _settings = settings;
         _events = events;
         _windrosePlus = windrosePlus;
         _config = config;
-        _conflictScanner = conflictScanner;
+        _serviceProvider = serviceProvider;
     }
 
     public ServerStatus Status { get; private set; } = ServerStatus.Stopped;
@@ -107,7 +108,8 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         // Phase 2a.5: Conflict scan — check for mod/multiplier conflicts before launch
         try
         {
-            var conflicts = _conflictScanner.ScanForConflicts();
+            var conflictScanner = _serviceProvider.GetService<IConflictScannerService>();
+            var conflicts = conflictScanner?.ScanForConflicts() ?? Array.Empty<ConflictResult>();
             if (conflicts.Count > 0)
             {
                 foreach (var c in conflicts)
