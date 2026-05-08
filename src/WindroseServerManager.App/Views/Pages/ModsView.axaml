@@ -228,35 +228,50 @@
                                         <ItemsControl ItemsSource="{Binding Items}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="vm:ModItemViewModel">
-                                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,4">
-                                                        <!-- Per-Child-Checkbox für Teilauswahl im Bundle -->
-                                                        <CheckBox Grid.Column="0"
-                                                                  IsChecked="{Binding IsSelected}"
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="0,0,10,0" />
-                                                        <!-- Opacity signalisiert disabled -->
-                                                        <TextBlock Grid.Column="1" Classes="caption"
-                                                                   VerticalAlignment="Center"
-                                                                   Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolToOpacityConverter.Instance}}">
-                                                            <Run Text="{Binding FileName}" />
-                                                            <Run Text="  ·  " Foreground="{DynamicResource BrandTextMutedBrush}" />
-                                                            <Run Text="{Binding SizeBytes, Converter={x:Static vm:SizeToMbConverter.Instance}, Mode=OneWay}" />
-                                                            <Run Text=" MB" />
-                                                        </TextBlock>
-                                                        <!-- Eye/EyeOff toggle -->
-                                                        <Button Grid.Column="2" Classes="icon-btn naked"
-                                                                Margin="0,0,4,0"
-                                                                Content="{Binding IsEnabled, Converter={x:Static vm:EnabledToEyeIconConverter.Instance}}"
-                                                                ToolTip.Tip="{Binding IsEnabled, Converter={x:Static vm:EnabledToToggleLabelConverter.Instance}}"
-                                                                Command="{Binding $parent[UserControl].((vm:ModsViewModel)DataContext).ToggleEnabledCommand}"
-                                                                CommandParameter="{Binding}" />
-                                                        <!-- Uninstall -->
-                                                        <Button Grid.Column="3" Classes="icon-btn naked danger"
-                                                                Content="&#xE74D;"
-                                                                ToolTip.Tip="{DynamicResource Mods.Uninstall}"
-                                                                Command="{Binding $parent[UserControl].((vm:ModsViewModel)DataContext).UninstallCommand}"
-                                                                CommandParameter="{Binding}" />
-                                                    </Grid>
+                                                    <StackPanel>
+                                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,4">
+                                                            <!-- Per-Child-Checkbox für Teilauswahl im Bundle -->
+                                                            <CheckBox Grid.Column="0"
+                                                                      IsChecked="{Binding IsSelected}"
+                                                                      VerticalAlignment="Center"
+                                                                      Margin="0,0,10,0" />
+                                                            <!-- Opacity signalisiert disabled -->
+                                                            <TextBlock Grid.Column="1" Classes="caption"
+                                                                       VerticalAlignment="Center"
+                                                                       Opacity="{Binding IsEnabled, Converter={x:Static vm:BoolToOpacityConverter.Instance}}">
+                                                                <Run Text="{Binding FileName}" />
+                                                                <Run Text="  ·  " Foreground="{DynamicResource BrandTextMutedBrush}" />
+                                                                <Run Text="{Binding SizeBytes, Converter={x:Static vm:SizeToMbConverter.Instance}, Mode=OneWay}" />
+                                                                <Run Text=" MB" />
+                                                            </TextBlock>
+                                                            <!-- Eye/EyeOff toggle -->
+                                                            <Button Grid.Column="2" Classes="icon-btn naked"
+                                                                    Margin="0,0,4,0"
+                                                                    Content="{Binding IsEnabled, Converter={x:Static vm:EnabledToEyeIconConverter.Instance}}"
+                                                                    ToolTip.Tip="{Binding IsEnabled, Converter={x:Static vm:EnabledToToggleLabelConverter.Instance}}"
+                                                                    Command="{Binding $parent[UserControl].((vm:ModsViewModel)DataContext).ToggleEnabledCommand}"
+                                                                    CommandParameter="{Binding}" />
+                                                            <!-- Uninstall -->
+                                                            <Button Grid.Column="3" Classes="icon-btn naked danger"
+                                                                    Content="&#xE74D;"
+                                                                    ToolTip.Tip="{DynamicResource Mods.Uninstall}"
+                                                                    Command="{Binding $parent[UserControl].((vm:ModsViewModel)DataContext).UninstallCommand}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </Grid>
+                                                        <!-- Conflict warning -->
+                                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                                    IsVisible="{Binding HasConflict}"
+                                                                    Margin="26,2,0,4">
+                                                            <TextBlock Text="&#xE7BA;"
+                                                                       FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets"
+                                                                       FontSize="11" VerticalAlignment="Center"
+                                                                       Foreground="{DynamicResource BrandAmberBrush}" />
+                                                            <TextBlock Text="{Binding ConflictWarning}"
+                                                                       Classes="caption"
+                                                                       Foreground="{DynamicResource BrandAmberBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                    </StackPanel>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>

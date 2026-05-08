@@ -668,6 +668,7 @@
     <sys:String x:Key="Nav.Events">Events</sys:String>
     <sys:String x:Key="Nav.SeaChart">Sea Chart</sys:String>
     <sys:String x:Key="Nav.Editor">INI Editor</sys:String>
+    <sys:String x:Key="Nav.QoL">QoL Settings</sys:String>
 
     <!-- Phase 11 — Players View -->
     <sys:String x:Key="Players.Title">Players</sys:String>
@@ -832,4 +833,43 @@
     <sys:String x:Key="DiscordBot.Cmd.UpdateValidating">Validating files...</sys:String>
     <sys:String x:Key="DiscordBot.Cmd.UpdateSuccess">Server updated successfully!</sys:String>
     <sys:String x:Key="DiscordBot.Cmd.UpdateFailed">Update failed: {0}</sys:String>
+
+    <!-- QoL Settings page -->
+    <sys:String x:Key="QoL.Title">QoL Settings</sys:String>
+    <sys:String x:Key="QoL.Subtitle">Server-side quality of life multipliers. These settings are safe — they do not affect characters when joining other servers.</sys:String>
+    <sys:String x:Key="QoL.OptOut.Title">Windrose+ Not Active</sys:String>
+    <sys:String x:Key="QoL.OptOut.Desc">QoL settings require Windrose+ to be installed and active.</sys:String>
+    <sys:String x:Key="QoL.Save">Save</sys:String>
+    <sys:String x:Key="QoL.ResetAll">Reset all</sys:String>
+    <sys:String x:Key="QoL.Saved">QoL settings saved.</sys:String>
+    <sys:String x:Key="QoL.RestartRequired">Server must be restarted for changes to take effect.</sys:String>
+    <sys:String x:Key="QoL.Error.Load">Failed to load QoL settings.</sys:String>
+    <sys:String x:Key="QoL.Error.Save">Failed to save QoL settings.</sys:String>
+    <sys:String x:Key="QoL.Category.Economy">Economy</sys:String>
+    <sys:String x:Key="QoL.Category.Farming">Farming</sys:String>
+    <sys:String x:Key="QoL.Category.Inventory">Inventory (Use with caution)</sys:String>
+    <sys:String x:Key="QoL.Category.Character">Character</sys:String>
+    <sys:String x:Key="QoL.Inventory.DangerWarning">These multipliers have been known to cause save corruption when combined with pak mods that modify the same values. Use only if you have no conflicting mods installed.</sys:String>
+    <sys:String x:Key="QoL.Xp.Name">Experience Points</sys:String>
+    <sys:String x:Key="QoL.Xp.Desc">How fast players earn XP. 2.0x = double XP, 0.5x = half XP.</sys:String>
+    <sys:String x:Key="QoL.Loot.Name">Loot Amount</sys:String>
+    <sys:String x:Key="QoL.Loot.Desc">Amount of items in chests and drops.</sys:String>
+    <sys:String x:Key="QoL.CraftCost.Name">Crafting Cost</sys:String>
+    <sys:String x:Key="QoL.CraftCost.Desc">Resource requirements when crafting. 0.5x = half the material cost.</sys:String>
+    <sys:String x:Key="QoL.CropSpeed.Name">Crop Growth</sys:String>
+    <sys:String x:Key="QoL.CropSpeed.Desc">Growth speed of plants and crops.</sys:String>
+    <sys:String x:Key="QoL.CookingSpeed.Name">Cooking Speed</sys:String>
+    <sys:String x:Key="QoL.CookingSpeed.Desc">How fast dishes are prepared in a cooking pot or stove.</sys:String>
+    <sys:String x:Key="QoL.HarvestYield.Name">Harvest Yield</sys:String>
+    <sys:String x:Key="QoL.HarvestYield.Desc">Amount of resources per harvest or mining action.</sys:String>
+    <sys:String x:Key="QoL.StackSize.Name">Stack Size</sys:String>
+    <sys:String x:Key="QoL.StackSize.Desc">Maximum number of items per inventory slot. Known crash risk with pak mods.</sys:String>
+    <sys:String x:Key="QoL.InventorySize.Name">Inventory Size</sys:String>
+    <sys:String x:Key="QoL.InventorySize.Desc">Number of available inventory slots per player. Known crash risk with pak mods.</sys:String>
+    <sys:String x:Key="QoL.Weight.Name">Carry Weight</sys:String>
+    <sys:String x:Key="QoL.Weight.Desc">Maximum carry weight for players. Known crash risk with pak mods.</sys:String>
+    <sys:String x:Key="QoL.PointsPerLevel.Name">Points per Level</sys:String>
+    <sys:String x:Key="QoL.PointsPerLevel.Desc">Number of skill points a player receives per level-up.</sys:String>
+    <sys:String x:Key="QoL.Conflict.Title">Mod Conflicts Detected</sys:String>
+    <sys:String x:Key="Mods.ConflictWarning">This mod conflicts with an active QoL multiplier.</sys:String>
 </ResourceDictionary>

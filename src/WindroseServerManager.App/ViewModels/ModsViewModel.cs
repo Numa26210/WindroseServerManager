@@ -22,6 +22,7 @@ public partial class ModsViewModel : ViewModelBase
     private readonly IServerProcessService _proc;
     private readonly IToastService _toasts;
     private readonly IAppSettingsService _settings;
+    private readonly IConflictScannerService _conflictScanner;
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = new();
     public ObservableCollection<ModGroupViewModel> Groups { get; } = new();
@@ -41,12 +42,14 @@ public partial class ModsViewModel : ViewModelBase
         IModService mods,
         IServerProcessService proc,
         IToastService toasts,
-        IAppSettingsService settings)
+        IAppSettingsService settings,
+        IConflictScannerService conflictScanner)
     {
         _mods = mods;
         _proc = proc;
         _toasts = toasts;
         _settings = settings;
+        _conflictScanner = conflictScanner;
 
         _proc.StatusChanged += _ => Avalonia.Threading.Dispatcher.UIThread.Post(RefreshReadiness);
         Mods.CollectionChanged += OnModsCollectionChanged;
@@ -103,6 +106,22 @@ public partial class ModsViewModel : ViewModelBase
                 .ToList();
 
             foreach (var i in items) Mods.Add(i);
+
+            // Annotate mods with conflict warnings
+            try
+            {
+                var conflicts = _conflictScanner.ScanForConflicts();
+                foreach (var mod in items)
+                {
+                    var modConflicts = conflicts
+                        .Where(c => c.ModFileName.Equals(mod.FileName, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    mod.ConflictWarning = modConflicts.Count > 0
+                        ? string.Join("; ", modConflicts.Select(c => c.Description))
+                        : null;
+                }
+            }
+            catch { /* conflict scan is best-effort */ }
 
             RebuildGroups(items, expansionStates);
         }

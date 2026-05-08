@@ -14,6 +14,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
     private readonly IServerEventLog _events;
     private readonly IWindrosePlusService _windrosePlus;
     private readonly IServerConfigService _config;
+    private readonly IConflictScannerService _conflictScanner;
     private readonly object _lock = new();
 
     private readonly ConcurrentQueue<ServerLogLine> _logBuffer = new();
@@ -26,13 +27,15 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         IAppSettingsService settings,
         IServerEventLog events,
         IWindrosePlusService windrosePlus,
-        IServerConfigService config)
+        IServerConfigService config,
+        IConflictScannerService conflictScanner)
     {
         _logger = logger;
         _settings = settings;
         _events = events;
         _windrosePlus = windrosePlus;
         _config = config;
+        _conflictScanner = conflictScanner;
     }
 
     public ServerStatus Status { get; private set; } = ServerStatus.Stopped;
@@ -44,6 +47,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
 
     public event Action<ServerStatus>? StatusChanged;
     public event Action<ServerLogLine>? LogAppended;
+    public event Action<IReadOnlyList<ConflictResult>>? ConflictsDetected;
 
     public string? ValidateCanStart()
     {
@@ -98,6 +102,27 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Konnte ServerDescription.json nicht heilen — Server wird trotzdem gestartet");
+        }
+
+        // Phase 2a.5: Conflict scan — check for mod/multiplier conflicts before launch
+        try
+        {
+            var conflicts = _conflictScanner.ScanForConflicts();
+            if (conflicts.Count > 0)
+            {
+                foreach (var c in conflicts)
+                    AppendSystem($"[{c.Severity.ToString().ToUpperInvariant()}] Mod conflict: {c.ModDisplayName} <-> {c.ConflictingParameter}: {c.Description}");
+
+                var errorCount = conflicts.Count(c => c.Severity == ConflictSeverity.Error);
+                if (errorCount > 0)
+                    AppendSystem($"[WARNING] {errorCount} high-risk mod conflict(s) detected. Save/character corruption possible.");
+
+                ConflictsDetected?.Invoke(conflicts);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Conflict scan failed — continuing with server start");
         }
 
         // Phase 2b: WindrosePlus pre-launch hook (async, outside lock)

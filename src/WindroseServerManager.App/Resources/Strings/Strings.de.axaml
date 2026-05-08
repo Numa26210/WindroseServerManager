@@ -668,6 +668,7 @@
     <sys:String x:Key="Nav.Events">Ereignisse</sys:String>
     <sys:String x:Key="Nav.SeaChart">Seekarte</sys:String>
     <sys:String x:Key="Nav.Editor">INI-Editor</sys:String>
+    <sys:String x:Key="Nav.QoL">QoL-Einstellungen</sys:String>
 
     <!-- Phase 11 — Players View -->
     <sys:String x:Key="Players.Title">Spieler</sys:String>
@@ -832,4 +833,43 @@
     <sys:String x:Key="DiscordBot.Cmd.UpdateValidating">Dateien werden überprüft...</sys:String>
     <sys:String x:Key="DiscordBot.Cmd.UpdateSuccess">Server erfolgreich aktualisiert!</sys:String>
     <sys:String x:Key="DiscordBot.Cmd.UpdateFailed">Update fehlgeschlagen: {0}</sys:String>
+
+    <!-- QoL-Einstellungen -->
+    <sys:String x:Key="QoL.Title">QoL-Einstellungen</sys:String>
+    <sys:String x:Key="QoL.Subtitle">Server-seitige Quality-of-Life-Multiplikatoren. Diese Einstellungen sind sicher — sie beeinflussen Charaktere auf anderen Servern nicht.</sys:String>
+    <sys:String x:Key="QoL.OptOut.Title">Windrose+ nicht aktiv</sys:String>
+    <sys:String x:Key="QoL.OptOut.Desc">QoL-Einstellungen benötigen Windrose+.</sys:String>
+    <sys:String x:Key="QoL.Save">Speichern</sys:String>
+    <sys:String x:Key="QoL.ResetAll">Alle zurücksetzen</sys:String>
+    <sys:String x:Key="QoL.Saved">QoL-Einstellungen gespeichert.</sys:String>
+    <sys:String x:Key="QoL.RestartRequired">Server muss neu gestartet werden, damit die Änderungen wirksam werden.</sys:String>
+    <sys:String x:Key="QoL.Error.Load">QoL-Einstellungen konnten nicht geladen werden.</sys:String>
+    <sys:String x:Key="QoL.Error.Save">QoL-Einstellungen konnten nicht gespeichert werden.</sys:String>
+    <sys:String x:Key="QoL.Category.Economy">Wirtschaft</sys:String>
+    <sys:String x:Key="QoL.Category.Farming">Landwirtschaft</sys:String>
+    <sys:String x:Key="QoL.Category.Inventory">Inventar (Mit Vorsicht verwenden)</sys:String>
+    <sys:String x:Key="QoL.Category.Character">Charakter</sys:String>
+    <sys:String x:Key="QoL.Inventory.DangerWarning">Diese Multiplikatoren können Speicherstände beschädigen, wenn sie mit Pak-Mods kombiniert werden, die dieselben Werte ändern. Nur verwenden, wenn keine Konflikt-Mods installiert sind.</sys:String>
+    <sys:String x:Key="QoL.Xp.Name">Erfahrungspunkte</sys:String>
+    <sys:String x:Key="QoL.Xp.Desc">Wie schnell Spieler XP verdienen. 2,0x = doppelte XP, 0,5x = halbe XP.</sys:String>
+    <sys:String x:Key="QoL.Loot.Name">Loot-Menge</sys:String>
+    <sys:String x:Key="QoL.Loot.Desc">Menge der Gegenstände in Truhen und Drops.</sys:String>
+    <sys:String x:Key="QoL.CraftCost.Name">Herstellungskosten</sys:String>
+    <sys:String x:Key="QoL.CraftCost.Desc">Ressourcenbedarf beim Craften. 0,5x = halbierter Materialverbrauch.</sys:String>
+    <sys:String x:Key="QoL.CropSpeed.Name">Pflanzenwachstum</sys:String>
+    <sys:String x:Key="QoL.CropSpeed.Desc">Wachstumsgeschwindigkeit von Pflanzen und Feldfrüchten.</sys:String>
+    <sys:String x:Key="QoL.CookingSpeed.Name">Kochgeschwindigkeit</sys:String>
+    <sys:String x:Key="QoL.CookingSpeed.Desc">Wie schnell Gerichte im Kochtopf oder Herd zubereitet werden.</sys:String>
+    <sys:String x:Key="QoL.HarvestYield.Name">Ernteertrag</sys:String>
+    <sys:String x:Key="QoL.HarvestYield.Desc">Menge der Ressourcen pro Ernte oder Abbau-Aktion.</sys:String>
+    <sys:String x:Key="QoL.StackSize.Name">Stapelgröße</sys:String>
+    <sys:String x:Key="QoL.StackSize.Desc">Maximale Anzahl Gegenstände pro Inventar-Slot. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.InventorySize.Name">Inventargröße</sys:String>
+    <sys:String x:Key="QoL.InventorySize.Desc">Anzahl verfügbarer Inventar-Slots je Spieler. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.Weight.Name">Traglast</sys:String>
+    <sys:String x:Key="QoL.Weight.Desc">Maximale Traglast der Spieler. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.PointsPerLevel.Name">Punkte pro Level</sys:String>
+    <sys:String x:Key="QoL.PointsPerLevel.Desc">Anzahl Skillpunkte die ein Spieler pro Level-Aufstieg erhält.</sys:String>
+    <sys:String x:Key="QoL.Conflict.Title">Mod-Konflikte erkannt</sys:String>
+    <sys:String x:Key="Mods.ConflictWarning">Diese Mod steht in Konflikt mit einem aktiven QoL-Multiplikator.</sys:String>
 </ResourceDictionary>

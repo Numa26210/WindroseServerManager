@@ -294,6 +294,7 @@ public class ModServiceTests : IDisposable
         public IReadOnlyList<ServerLogLine> RecentLog => Array.Empty<ServerLogLine>();
         public event Action<ServerStatus>? StatusChanged;
         public event Action<ServerLogLine>? LogAppended;
+        public event Action<IReadOnlyList<ConflictResult>>? ConflictsDetected;
         public Task<bool> StartAsync(CancellationToken ct = default) => Task.FromResult(false);
         public Task StopAsync(CancellationToken ct = default) => Task.CompletedTask;
         public Task KillAsync(CancellationToken ct = default) => Task.CompletedTask;

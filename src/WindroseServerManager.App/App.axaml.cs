@@ -220,6 +220,7 @@ public partial class App : Application
         s.AddSingleton<IServerConfigService, ServerConfigService>();
         s.AddSingleton<IBackupService, BackupService>();
         s.AddSingleton<IModService, ModService>();
+        s.AddSingleton<IConflictScannerService, ConflictScannerService>();
         s.AddSingleton<IMetricsService, MetricsService>();
         s.AddSingleton<IServerEventLog, ServerEventLog>();
 
@@ -266,6 +267,7 @@ public partial class App : Application
         s.AddSingleton<PlayersViewModel>();
         s.AddSingleton<EventsViewModel>();
         s.AddSingleton<EditorViewModel>();
+        s.AddSingleton<QoLSettingsViewModel>();
     }
 
     private void OnTrayShowMainWindow(object? sender, EventArgs e)

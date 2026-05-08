@@ -77,6 +77,7 @@ public partial class MainWindowViewModel : ViewModelBase
             // Leaflet interactions (zoom/pan/wheel) work reliably. The embedded NativeWebView
             // in Avalonia.Controls.WebView 12.0.0 does not route mouse input properly.
             new() { TitleKey = "Nav.Editor",   Icon = "\uE70F", VmType = typeof(EditorViewModel) },
+            new() { TitleKey = "Nav.QoL",      Icon = "\uE9D5", VmType = typeof(QoLSettingsViewModel) },
             new() { TitleKey = "Nav.Mods", Icon = "\uEA86", VmType = typeof(ModsViewModel) },
             new() { TitleKey = "Nav.Backups", Icon = "\uE8C8", VmType = typeof(BackupsViewModel) },
         };

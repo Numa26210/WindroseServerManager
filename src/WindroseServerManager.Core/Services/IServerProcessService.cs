@@ -15,6 +15,9 @@ public interface IServerProcessService
     event Action<ServerStatus>? StatusChanged;
     event Action<ServerLogLine>? LogAppended;
 
+    /// <summary>Fired when the pre-launch conflict scan detects mod/multiplier conflicts.</summary>
+    event Action<IReadOnlyList<ConflictResult>>? ConflictsDetected;
+
     /// <summary>Starts the Windrose dedicated server. No-op if already running.</summary>
     Task<bool> StartAsync(CancellationToken ct = default);
 
