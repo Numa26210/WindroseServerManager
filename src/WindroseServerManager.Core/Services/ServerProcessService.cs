@@ -90,6 +90,25 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             _startedServerDir = dir;
         }
 
+        // Phase 2a-pre: Auto-backup before launch
+        try
+        {
+            var backup = _serviceProvider.GetService<IBackupService>();
+            if (backup is not null)
+            {
+                AppendSystem("Creating pre-launch backup...");
+                var result = await backup.CreatePreLaunchBackupAsync(ct).ConfigureAwait(false);
+                if (result is not null)
+                    AppendSystem($"Pre-launch backup created: {result.FileName} ({result.SizeBytes / 1048576.0:F1} MB)");
+            }
+        }
+        catch (OperationCanceledException) { return false; }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Pre-launch backup failed — continuing with server start");
+            AppendSystem($"[WARNING] Pre-launch backup failed: {ex.Message}");
+        }
+
         // Phase 2a: ServerDescription.json heilen falls P2pProxyAddress leer ist.
         // Windrose baut den internen gRPC-Bind-String als {P2pProxyAddress}:{randomPort}.
         // Leeres Feld → ":43512" → gRPC lehnt ab → Server killt sich mit "Data is inconsistent".

@@ -24,6 +24,7 @@ public partial class QoLSettingsViewModel : ViewModelBase
     private readonly IConflictScannerService _conflictScanner;
     private readonly IServerProcessService _proc;
     private readonly IToastService _toasts;
+    private readonly IBackupService _backup;
 
     private bool _suppressConflictScan;
 
@@ -63,7 +64,8 @@ public partial class QoLSettingsViewModel : ViewModelBase
         IModService mods,
         IConflictScannerService conflictScanner,
         IServerProcessService proc,
-        IToastService toasts)
+        IToastService toasts,
+        IBackupService backup)
     {
         _api = api;
         _settings = settings;
@@ -71,6 +73,7 @@ public partial class QoLSettingsViewModel : ViewModelBase
         _conflictScanner = conflictScanner;
         _proc = proc;
         _toasts = toasts;
+        _backup = backup;
     }
 
     public void Start()
@@ -123,6 +126,8 @@ public partial class QoLSettingsViewModel : ViewModelBase
     {
         var serverDir = _settings.ActiveServerDir;
         if (string.IsNullOrWhiteSpace(serverDir)) return;
+
+        try { await _backup.CreatePreConfigBackupAsync(); } catch { /* best-effort */ }
 
         var cfg = _api.ReadConfig(serverDir) ?? new WindrosePlusConfig();
         cfg.Multipliers["xp"] = XpMultiplier;

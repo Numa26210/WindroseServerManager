@@ -9,6 +9,8 @@ public sealed class BackupService : IBackupService
     private const string SavesRelativeDir = @"R5\Saved";
     private const string AutoPrefix = "auto-";
     private const string ManualPrefix = "manual-";
+    private const string PreLaunchPrefix = "pre-launch-";
+    private const string PreConfigPrefix = "pre-config-";
 
     private readonly ILogger<BackupService> _logger;
     private readonly IAppSettingsService _settings;
@@ -82,6 +84,46 @@ public sealed class BackupService : IBackupService
             ServerName: serverName));
 
         return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, isAutomatic);
+    }
+
+    public async Task<BackupInfo?> CreatePreLaunchBackupAsync(CancellationToken ct = default)
+        => await CreatePrefixedBackupAsync(PreLaunchPrefix, ct).ConfigureAwait(false);
+
+    public async Task<BackupInfo?> CreatePreConfigBackupAsync(CancellationToken ct = default)
+        => await CreatePrefixedBackupAsync(PreConfigPrefix, ct).ConfigureAwait(false);
+
+    private async Task<BackupInfo?> CreatePrefixedBackupAsync(string prefix, CancellationToken ct)
+    {
+        var saves = GetSavesDir();
+        if (saves is null)
+        {
+            _logger.LogDebug("Skipping {Prefix} backup: saves directory not found", prefix);
+            return null;
+        }
+
+        var backupDir = GetBackupDir();
+        var ts = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var fileName = $"{prefix}{ts}.zip";
+        var fullPath = Path.Combine(backupDir, fileName);
+
+        _logger.LogInformation("Creating {Prefix} backup: {Path}", prefix.TrimEnd('-'), fullPath);
+
+        try
+        {
+            await Task.Run(() =>
+                ZipFile.CreateFromDirectory(saves, fullPath, CompressionLevel.Fastest, includeBaseDirectory: true),
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "{Prefix} backup creation failed", prefix.TrimEnd('-'));
+            try { File.Delete(fullPath); } catch { /* ignore */ }
+            return null; // Don't throw — backups should not block launch or config saves
+        }
+
+        var info = new FileInfo(fullPath);
+        _logger.LogInformation("{Prefix} backup created: {Size:F1} MB", prefix.TrimEnd('-'), info.Length / 1048576.0);
+        return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, true);
     }
 
     public IEnumerable<BackupInfo> ListBackups()

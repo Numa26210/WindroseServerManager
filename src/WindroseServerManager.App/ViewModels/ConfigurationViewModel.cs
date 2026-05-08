@@ -26,6 +26,7 @@ public partial class ConfigurationViewModel : ViewModelBase
     private readonly IServerConfigService _config;
     private readonly IAppSettingsService _settings;
     private readonly IToastService _toasts;
+    private readonly IBackupService _backup;
 
     // Suppress the auto-custom preset switch while we populate from disk.
     private bool _suppressPresetAutoSwitch;
@@ -71,11 +72,12 @@ public partial class ConfigurationViewModel : ViewModelBase
 
     private string? _lastLoadedServerDir;
 
-    public ConfigurationViewModel(IServerConfigService config, IAppSettingsService settings, IToastService toasts)
+    public ConfigurationViewModel(IServerConfigService config, IAppSettingsService settings, IToastService toasts, IBackupService backup)
     {
         _config = config;
         _settings = settings;
         _toasts = toasts;
+        _backup = backup;
         _lastLoadedServerDir = _settings.ActiveServerDir;
         _settings.Changed += OnSettingsChanged;
         _ = ReloadAsync();
@@ -406,6 +408,7 @@ public partial class ConfigurationViewModel : ViewModelBase
         }
         try
         {
+            try { await _backup.CreatePreConfigBackupAsync(); } catch { /* best-effort */ }
             await _config.SaveServerDescriptionAsync(Server);
 
             // Name in der Server-Liste (ServerEntry) mit dem in-game Namen synchron halten,
@@ -467,6 +470,8 @@ public partial class ConfigurationViewModel : ViewModelBase
         }
         try
         {
+            try { await _backup.CreatePreConfigBackupAsync(); } catch { /* best-effort */ }
+
             World.WorldName = WorldName;
             World.WorldPresetType = WorldPresetType;
 

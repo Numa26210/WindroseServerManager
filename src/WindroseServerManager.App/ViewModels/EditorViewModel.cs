@@ -22,6 +22,7 @@ public partial class EditorViewModel : ViewModelBase
     private readonly IAppSettingsService _settings;
     private readonly IServerProcessService _proc;
     private readonly IToastService _toasts;
+    private readonly IBackupService _backup;
 
     [ObservableProperty] private ObservableCollection<CategoryGroup> _categories = new();
     [ObservableProperty] private bool _isLoading;
@@ -34,13 +35,14 @@ public partial class EditorViewModel : ViewModelBase
     public bool HasAnyError => Categories.Any(c => c.Entries.Any(e => e.HasError));
     public bool CanSave => !HasAnyError && !IsLoading;
 
-    public EditorViewModel(IWindrosePlusApiService api, IWindrosePlusService wplus, IAppSettingsService settings, IServerProcessService proc, IToastService toasts)
+    public EditorViewModel(IWindrosePlusApiService api, IWindrosePlusService wplus, IAppSettingsService settings, IServerProcessService proc, IToastService toasts, IBackupService backup)
     {
         _api = api;
         _wplus = wplus;
         _settings = settings;
         _proc = proc;
         _toasts = toasts;
+        _backup = backup;
     }
 
     public void Start()
@@ -153,6 +155,8 @@ public partial class EditorViewModel : ViewModelBase
             _toasts.Error(Loc.Get("Editor.ValidationError"));
             return;
         }
+
+        try { await _backup.CreatePreConfigBackupAsync(); } catch { /* best-effort */ }
 
         var cfg = _api.ReadConfig(serverDir) ?? new WindrosePlusConfig();
         foreach (var group in Categories)

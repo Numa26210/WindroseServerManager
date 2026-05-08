@@ -13,6 +13,12 @@ public interface IBackupService
     /// <summary>Creates a backup zip of the saves dir. Returns the created backup, or null if saves dir missing.</summary>
     Task<BackupInfo?> CreateBackupAsync(bool isAutomatic, CancellationToken ct = default);
 
+    /// <summary>Creates a pre-launch backup before the server starts.</summary>
+    Task<BackupInfo?> CreatePreLaunchBackupAsync(CancellationToken ct = default);
+
+    /// <summary>Creates a pre-config backup before any configuration change.</summary>
+    Task<BackupInfo?> CreatePreConfigBackupAsync(CancellationToken ct = default);
+
     IEnumerable<BackupInfo> ListBackups();
 
     void DeleteBackup(string fileName);
