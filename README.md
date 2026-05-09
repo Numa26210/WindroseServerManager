@@ -4,16 +4,41 @@
 
 A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server control, configuration editing, mod management, backups, firewall rules, and app-update checks into one clean UI — and adds the full Windrose+ feature stack on top: player list with kick/ban, events log, live map, health checks and Windrose+ update notifications.
 
-**Status: Stable · v1.3.0**
+> **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-![Version](https://img.shields.io/badge/version-1.3.0-success)
+**Status: Stable · v1.5.0**
+
+![Version](https://img.shields.io/badge/version-1.5.0-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey)
 ![.NET](https://img.shields.io/badge/.NET-9-512BD4)
 ![Built on Windrose+](https://img.shields.io/badge/built%20on-Windrose%2B-orange)
 ![Language](https://img.shields.io/badge/UI-English%20%7C%20German-blueviolet)
+![Tests](https://img.shields.io/badge/tests-215%20passing-brightgreen)
 
-> The UI ships in **English and German** with auto-detection from the Windows language setting (screenshots happen to show the German UI).
+> The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.5.0
+
+### 🔒 Security Fixes
+- **RCON command injection prevention** — kick/ban/broadcast parameters are now sanitized (strips `\n`, `\r`, `\0`) to prevent arbitrary command injection
+- **PowerShell script integrity** — SHA-256 verification of PS1 scripts before execution (install.ps1, BuildPak, dashboard)
+- **Strict digest enforcement** — installation now fails when the publisher SHA-256 digest is missing (was a warning, now a hard failure)
+- **Correct Windrose+ release URL** — updated to `github.com/HumanGenome/WindrosePlus`
+
+### ⚡ Performance Fixes
+- **Deadlock fix in RestartScheduler** — `CheckAutoRestartThresholds` converted to `async Task` with proper `await`
+- **HttpClient reuse** — single reusable `_loginClient` instance instead of `new HttpClient()` per request
+- **Async session management** — `_sessionLock.Wait()` replaced with `await _sessionLock.WaitAsync()`
+
+### ✅ Test Coverage
+- **215 passing tests** (up from 151 in v1.2.x, +64 new)
+- **BackupService** — 22 tests (create/restore/delete/retention, safety snapshot, partial cleanup)
+- **ServerConfigService** — 25 tests (load/save/delete, atomic write, envelope preservation, edge cases)
+- **ServerEventLog** — 9 tests (append/read/clear, corruption resilience, 50-writer concurrency)
+- **RCON sanitization** — 8 tests
 
 ---
 
@@ -47,6 +72,25 @@ A fully integrated Discord bot running as a background service alongside the Ava
 
 ---
 
+## Roadmap
+
+### v1.6.0 — Quality of Life *(coming next)*
+- 🔧 Windrose+ toggle on/off + version pinning (no more forced upgrades)
+- 💾 Per-server backup & mods folders
+- 🖥️ System tray: start minimized, close to tray, hide server console window
+- 🌐 Translation fixes (remaining German strings in English UI)
+- ⚠️ Mod conflict scanner + QoL settings page (Windrose+ multiplier sliders)
+
+### v1.7.0 — Automation & CLI
+- ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
+- 🔄 Native daily restart with auto-backup (no more `taskkill` workaround)
+
+### v2.x — Future
+- 🖥️ Multi-server concurrent launch
+- 🌐 WebUI for remote management
+
+---
+
 ## Built on Windrose+
 
 The headline feature in v1.2.0 — and most of the player-management UI you'll see in this manager — is powered by **[Windrose+](https://github.com/HumanGenome/WindrosePlus)**, an MIT-licensed mod by **HumanGenome** that adds the HTTP API, RCON, events log, and live map that Windrose itself doesn't expose.
@@ -61,7 +105,7 @@ A huge thank-you to **HumanGenome** for building Windrose+, keeping the API stab
 
 ## Features
 
-### 🤖 Discord Bot Integration *(new in v1.3.0)*
+### 🤖 Discord Bot Integration *(v1.3.0+)*
 - Bot runs as a background service — starts and stops with the app
 - Live server status as Discord Activity
 - Session history events forwarded to a configurable Discord channel
@@ -94,7 +138,7 @@ A huge thank-you to **HumanGenome** for building Windrose+, keeping the API stab
 - **Auto-restart on crash** (opt-in)
 - **Scheduled restarts** per weekday with configurable warning toast
 - **Threshold-based restarts** — high RAM usage or max uptime
-- **Backup on restart** *(new in v1.3.0)* — automatic backup before every restart
+- **Backup on restart** *(v1.3.0)* — automatic backup before every restart
 - **Session history** of all starts / stops / crashes with duration
 - **Live log** with colour coding (errors red, warnings orange)
 
@@ -170,12 +214,12 @@ No separate .NET install required — the self-contained build ships everything.
 ## Install
 
 ### Option A: Installer (recommended)
-1. Download `WindroseServerManager-Setup-1.3.0.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-Setup-1.5.0.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Run the installer, follow the prompts
 3. Launch from the Start Menu
 
 ### Option B: Portable ZIP
-1. Download `WindroseServerManager-1.3.0-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-1.5.0-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Extract anywhere
 3. Run `WindroseServerManager.exe`
 
@@ -264,24 +308,24 @@ WindroseServerManager/
 
 - **.NET 9** · **Avalonia 12** · Semi.Avalonia (with custom Navy/Amber brand layer)
 - **CommunityToolkit.Mvvm** · Microsoft.Extensions.Hosting / DI
-- **Discord.Net 3.13.0** *(new in v1.3.0)*
+- **Discord.Net 3.13.0** *(v1.3.0+)*
 - **Serilog** (file sink, daily rolling)
 - **SharpCompress** (7z support)
 - Windows-specific: tray icon, HKCU Run-Key, Netsh firewall, DwmSetWindowAttribute
 
 ## Tests
 
-Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit):
+Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit) — **215 passing**:
 
 ```powershell
 dotnet test
 ```
 
-Covers: mod install/uninstall/enable/disable, side-car metadata I/O, Nexus URL parser, archive filename parser, ServerDescription round-trip, invite code generator, AppSettings defaults, world parameter catalog, Windrose+ install (license preservation, atomicity, version marker, offline fallback), launcher resolution, health check, events log parser, editor config schema validation, report URL builder.
+Covers: mod install/uninstall/enable/disable, side-car metadata I/O, Nexus URL parser, archive filename parser, ServerDescription round-trip, invite code generator, AppSettings defaults, world parameter catalog, Windrose+ install (license preservation, atomicity, version marker, offline fallback), launcher resolution, health check, events log parser, editor config schema validation, report URL builder, RCON sanitization, BackupService, ServerConfigService, ServerEventLog.
 
 ## Credits
 
-- **[Windrose+](https://github.com/HumanGenome/WindrosePlus)** by **HumanGenome** — MIT-licensed mod that powers all player-management features in this app. Bundled at install time via fresh download from GitHub when you opt in; LICENSE preserved next to the mod, attribution in the About dialog. Coordination with HumanGenome confirmed Windrose+ is OK to bundle this way and the API surfaces (HTTP endpoints, RCON, events log, `windrose_plus.json`) are stable across point releases.
+- **[Windrose+](https://github.com/HumanGenome/WindrosePlus)** by **HumanGenome** — MIT-licensed mod that powers all player-management features in this app.
 - **[ManuelStaggl](https://github.com/ManuelStaggl/WindroseServerManager)** — original author of WindroseServerManager. This fork builds on their work.
 - The Windrose admin community on Reddit — every "is there a way to kick a player?" thread shaped what this app became.
 
