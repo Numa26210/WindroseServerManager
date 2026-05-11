@@ -31,17 +31,60 @@
 
             <!-- Categories -->
             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding Categories}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:CategoryGroup">
-                            <Border Classes="card" Padding="0" Margin="0,0,0,16">
-                                <StackPanel>
-                                    <!-- Category header -->
-                                    <Border Background="{DynamicResource BrandNavySurfaceAltBrush}"
-                                            CornerRadius="8,8,0,0" Padding="16,12">
-                                        <TextBlock Text="{Binding CategoryDisplayName}"
-                                                   Classes="section-header" />
-                                    </Border>
+                <StackPanel Spacing="16">
+
+                    <!-- Conflict banner -->
+                    <Border Classes="card" IsVisible="{Binding HasConflicts}"
+                            Background="{DynamicResource BrandErrorBrush}"
+                            Opacity="0.15" CornerRadius="8" Padding="16">
+                        <StackPanel Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xE7BA;"
+                                           FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets"
+                                           FontSize="18" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource BrandErrorBrush}" />
+                                <TextBlock Text="{DynamicResource QoL.Conflict.Title}"
+                                           Classes="body-emphasis"
+                                           Foreground="{DynamicResource BrandErrorBrush}" />
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding ActiveConflicts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Description}"
+                                                   TextWrapping="Wrap"
+                                                   Classes="caption" Margin="26,2,0,2" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Category groups -->
+                    <ItemsControl ItemsSource="{Binding Categories}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CategoryGroup">
+                                <Border Classes="card" Padding="0">
+                                    <StackPanel>
+                                        <!-- Category header -->
+                                        <Border Background="{DynamicResource BrandNavySurfaceAltBrush}"
+                                                CornerRadius="8,8,0,0" Padding="16,12">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="{Binding CategoryDisplayName}"
+                                                           Classes="section-header" />
+                                                <!-- Inventory danger warning -->
+                                                <StackPanel IsVisible="{Binding ShowInventoryWarning}"
+                                                            Orientation="Horizontal" Spacing="6">
+                                                    <TextBlock Text="&#xE7BA;"
+                                                               FontFamily="Segoe Fluent Icons,Segoe MDL2 Assets"
+                                                               FontSize="12" VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource BrandAmberBrush}" />
+                                                    <TextBlock Classes="caption"
+                                                               Foreground="{DynamicResource BrandAmberBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Text="{DynamicResource QoL.Inventory.DangerWarning}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
 
                                     <!-- Entries -->
                                     <ItemsControl ItemsSource="{Binding Entries}">
@@ -188,7 +231,8 @@
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ItemsControl>
+                </StackPanel>
             </ScrollViewer>
 
             <!-- Footer -->

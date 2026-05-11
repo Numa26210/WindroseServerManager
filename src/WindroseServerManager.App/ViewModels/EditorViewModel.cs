@@ -23,10 +23,12 @@ public partial class EditorViewModel : ViewModelBase
     private readonly IServerProcessService _proc;
     private readonly IToastService _toasts;
     private readonly IBackupService _backup;
+    private readonly IConflictScannerService _conflictScanner;
 
     [ObservableProperty] private ObservableCollection<CategoryGroup> _categories = new();
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string? _errorMessage;
+    [ObservableProperty] private ObservableCollection<ConflictResult> _activeConflicts = new();
 
     public bool IsWindrosePlusActive =>
         _settings.Current.WindrosePlusActiveByServer.GetValueOrDefault(
@@ -34,8 +36,16 @@ public partial class EditorViewModel : ViewModelBase
 
     public bool HasAnyError => Categories.Any(c => c.Entries.Any(e => e.HasError));
     public bool CanSave => !HasAnyError && !IsLoading;
+    public bool HasConflicts => ActiveConflicts.Count > 0;
 
-    public EditorViewModel(IWindrosePlusApiService api, IWindrosePlusService wplus, IAppSettingsService settings, IServerProcessService proc, IToastService toasts, IBackupService backup)
+    public EditorViewModel(
+        IWindrosePlusApiService api,
+        IWindrosePlusService wplus,
+        IAppSettingsService settings,
+        IServerProcessService proc,
+        IToastService toasts,
+        IBackupService backup,
+        IConflictScannerService conflictScanner)
     {
         _api = api;
         _wplus = wplus;
@@ -43,6 +53,7 @@ public partial class EditorViewModel : ViewModelBase
         _proc = proc;
         _toasts = toasts;
         _backup = backup;
+        _conflictScanner = conflictScanner;
     }
 
     public void Start()
@@ -82,6 +93,11 @@ public partial class EditorViewModel : ViewModelBase
                             OnPropertyChanged(nameof(CanSave));
                             SaveCommand.NotifyCanExecuteChanged();
                         }
+                        if (e.PropertyName == nameof(ConfigEntryViewModel.RawValue)
+                            && entry.Category != "Server")
+                        {
+                            RefreshConflicts();
+                        }
                     };
                     if (!groups.TryGetValue(schema.Category, out var list))
                         groups[schema.Category] = list = new List<ConfigEntryViewModel>();
@@ -91,6 +107,7 @@ public partial class EditorViewModel : ViewModelBase
                     Categories.Add(new CategoryGroup(cat, entries));
                 OnPropertyChanged(nameof(HasAnyError));
                 OnPropertyChanged(nameof(CanSave));
+                RefreshConflicts();
             });
         }
         catch (Exception ex)
@@ -177,12 +194,28 @@ public partial class EditorViewModel : ViewModelBase
             _toasts.Error(Loc.Get("Editor.Error.Save"));
         }
     }
+
+    private void RefreshConflicts()
+    {
+        try
+        {
+            var conflicts = _conflictScanner.ScanForConflicts();
+            ActiveConflicts = new ObservableCollection<ConflictResult>(conflicts);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Conflict scan in Editor view failed");
+            ActiveConflicts = new ObservableCollection<ConflictResult>();
+        }
+        OnPropertyChanged(nameof(HasConflicts));
+    }
 }
 
 public sealed class CategoryGroup
 {
     public string Category { get; }
     public string CategoryDisplayName => Loc.Get($"Editor.Category.{Category}");
+    public bool ShowInventoryWarning => Category == "Inventory";
     public IReadOnlyList<ConfigEntryViewModel> Entries { get; }
 
     public CategoryGroup(string category, IReadOnlyList<ConfigEntryViewModel> entries)

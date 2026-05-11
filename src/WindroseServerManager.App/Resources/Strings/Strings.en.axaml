@@ -337,6 +337,13 @@
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordHint">The password for RCON commands and the Windrose+ dashboard.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordCopied">Password copied.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordNone">No password configured.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Toggle.Label">Enable Windrose+ for this server</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Toggle.Hint">When off, the server launches in vanilla mode even if Windrose+ is installed. Restart the server to apply changes.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Label">Pinned version</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Lock Windrose+ to a specific release tag. Leave empty to always use the latest version.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Latest">(Latest)</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Placeholder">e.g. v1.3.0</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.VanillaWarning">Vanilla mode — Windrose+ features disabled for this server.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Title">App updates</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Hint">Checks GitHub for a newer version of Windrose Server Manager. Automatic every 6 hours.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.CheckNow">Check for update now</sys:String>
@@ -668,7 +675,6 @@
     <sys:String x:Key="Nav.Events">Events</sys:String>
     <sys:String x:Key="Nav.SeaChart">Sea Chart</sys:String>
     <sys:String x:Key="Nav.Editor">INI Editor</sys:String>
-    <sys:String x:Key="Nav.QoL">QoL Settings</sys:String>
 
     <!-- Phase 11 — Players View -->
     <sys:String x:Key="Players.Title">Players</sys:String>
@@ -723,7 +729,10 @@
     <sys:String x:Key="Editor.Error.Load">Could not load configuration.</sys:String>
     <sys:String x:Key="Editor.Error.Save">Could not save configuration.</sys:String>
     <sys:String x:Key="Editor.Category.Server">Server Settings</sys:String>
-    <sys:String x:Key="Editor.Category.Multipliers">Multipliers</sys:String>
+    <sys:String x:Key="Editor.Category.Economy">Economy</sys:String>
+    <sys:String x:Key="Editor.Category.Farming">Farming</sys:String>
+    <sys:String x:Key="Editor.Category.Inventory">Inventory (Use with caution)</sys:String>
+    <sys:String x:Key="Editor.Category.Character">Character</sys:String>
     <sys:String x:Key="Editor.Multiplier.Suffix">x</sys:String>
     <!-- Schema field names + descriptions -->
     <sys:String x:Key="Editor.Schema.HttpPort.Name">Dashboard Port</sys:String>

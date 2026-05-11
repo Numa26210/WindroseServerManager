@@ -15,19 +15,24 @@ public static class WindrosePlusConfigSchema
 {
     public static IReadOnlyList<ConfigEntrySchema> All { get; } = new List<ConfigEntrySchema>
     {
+        // Server settings (RCON + dashboard)
         new("Server", "http_port", "int",    1024, 65535, 8780,  "Editor.Schema.HttpPort",    "server"),
         new("Server", "enabled",   "bool",   null, null,  false, "Editor.Schema.RconEnabled",  "rcon"),
         new("Server", "password",  "string", null, null,  "",    "Editor.Schema.RconPassword", "rcon"),
-        new("Multipliers", "xp",              "float", 0.1, 100, 1.0, "Editor.Schema.Xp"),
-        new("Multipliers", "loot",            "float", 0.1, 100, 1.0, "Editor.Schema.Loot"),
-        new("Multipliers", "stack_size",      "float", 0.1, 100, 1.0, "Editor.Schema.StackSize"),
-        new("Multipliers", "craft_cost",      "float", 0.1, 100, 1.0, "Editor.Schema.CraftCost"),
-        new("Multipliers", "crop_speed",      "float", 0.1, 100, 1.0, "Editor.Schema.CropSpeed"),
-        new("Multipliers", "cooking_speed",   "float", 0.1, 100, 1.0, "Editor.Schema.CookingSpeed"),
-        new("Multipliers", "harvest_yield",   "float", 0.1, 100, 1.0, "Editor.Schema.HarvestYield"),
-        new("Multipliers", "inventory_size",  "float", 0.1, 100, 1.0, "Editor.Schema.InventorySize"),
-        new("Multipliers", "points_per_level","float", 0.1, 100, 1.0, "Editor.Schema.PointsPerLevel"),
-        new("Multipliers", "weight",          "float", 0.1, 100, 1.0, "Editor.Schema.Weight"),
+        // Economy
+        new("Economy", "xp",              "float", 0.1, 100, 1.0, "QoL.Xp"),
+        new("Economy", "loot",            "float", 0.1, 100, 1.0, "QoL.Loot"),
+        new("Economy", "craft_cost",      "float", 0.1, 100, 1.0, "QoL.CraftCost"),
+        // Farming
+        new("Farming", "crop_speed",      "float", 0.1, 100, 1.0, "QoL.CropSpeed"),
+        new("Farming", "cooking_speed",   "float", 0.1, 100, 1.0, "QoL.CookingSpeed"),
+        new("Farming", "harvest_yield",   "float", 0.1, 100, 1.0, "QoL.HarvestYield"),
+        // Inventory (danger zone — pak mod conflicts)
+        new("Inventory", "stack_size",     "float", 0.1, 100, 1.0, "QoL.StackSize"),
+        new("Inventory", "inventory_size", "float", 0.1, 100, 1.0, "QoL.InventorySize"),
+        new("Inventory", "weight",         "float", 0.1, 100, 1.0, "QoL.Weight"),
+        // Character
+        new("Character", "points_per_level","float", 0.1, 100, 1.0, "QoL.PointsPerLevel"),
     };
 
     public static string? Validate(string key, string rawValue)

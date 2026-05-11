@@ -337,6 +337,13 @@
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordHint">Das Passwort für RCON-Befehle und das Windrose+ Dashboard.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordCopied">Passwort kopiert.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.RconPasswordNone">Kein Passwort konfiguriert.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Toggle.Label">Windrose+ für diesen Server aktivieren</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Toggle.Hint">Wenn ausgeschaltet, startet der Server im Vanilla-Modus, auch wenn Windrose+ installiert ist. Server neu starten um Änderungen zu übernehmen.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Label">Festgepinnte Version</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Windrose+ auf einen bestimmten Release-Tag festpinnen. Leer lassen um immer die neueste Version zu verwenden.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Latest">(Neueste)</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Placeholder">z.B. v1.3.0</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.VanillaWarning">Vanilla-Modus — Windrose+-Funktionen für diesen Server deaktiviert.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Title">App-Updates</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Hint">Prüft auf GitHub nach einer neueren Version des Windrose Server Managers. Automatisch alle 6 Stunden.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.CheckNow">Jetzt auf Update prüfen</sys:String>
@@ -668,7 +675,6 @@
     <sys:String x:Key="Nav.Events">Ereignisse</sys:String>
     <sys:String x:Key="Nav.SeaChart">Seekarte</sys:String>
     <sys:String x:Key="Nav.Editor">INI-Editor</sys:String>
-    <sys:String x:Key="Nav.QoL">QoL-Einstellungen</sys:String>
 
     <!-- Phase 11 — Players View -->
     <sys:String x:Key="Players.Title">Spieler</sys:String>
@@ -723,7 +729,10 @@
     <sys:String x:Key="Editor.Error.Load">Konfiguration konnte nicht geladen werden.</sys:String>
     <sys:String x:Key="Editor.Error.Save">Konfiguration konnte nicht gespeichert werden.</sys:String>
     <sys:String x:Key="Editor.Category.Server">Server-Einstellungen</sys:String>
-    <sys:String x:Key="Editor.Category.Multipliers">Multiplikatoren</sys:String>
+    <sys:String x:Key="Editor.Category.Economy">Wirtschaft</sys:String>
+    <sys:String x:Key="Editor.Category.Farming">Landwirtschaft</sys:String>
+    <sys:String x:Key="Editor.Category.Inventory">Inventar (Mit Vorsicht verwenden)</sys:String>
+    <sys:String x:Key="Editor.Category.Character">Charakter</sys:String>
     <sys:String x:Key="Editor.Multiplier.Suffix">x</sys:String>
     <!-- Schema field names + descriptions -->
     <sys:String x:Key="Editor.Schema.HttpPort.Name">Dashboard-Port</sys:String>
