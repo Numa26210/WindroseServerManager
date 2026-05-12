@@ -157,3 +157,51 @@ Phase 11 can start as soon as Phase 8 + 10 are done; Phase 9 can run in parallel
 
 ---
 *Roadmap created: 2026-04-19*
+
+---
+
+# Roadmap — v1.6.0 QoL & Automation
+
+**Milestone:** v1.6.0 — Quality of Life & Automation Improvements
+**Defined:** 2026-05-12
+
+## Milestone Goal
+
+Improve reliability of automated workflows (Windows Update reboots, headless servers on secondary drives) and lay the groundwork for full CLI support in v1.7.0.
+
+## Planned Features
+
+### AUTOSTART-DELAY-01 — Configurable Auto-Start Delay
+
+**Priority:** High
+**Reported by:** fisics (ManuelStaggl/WindroseServerManager#9)
+
+**Problem:**
+When the app starts via Windows autostart (HKCU Run-Key), secondary drives (D:, E:, etc.) may not be mounted yet. The app tries to find `R5\Saved` for the pre-launch backup → drive not ready → backup **silently skipped** → server launches without a backup.
+
+**Solution:**
+Add a configurable **"Auto-start delay"** setting in the app UI:
+
+- **Settings → "Auto-start delay (seconds)"** — numeric input or slider, range `0`–`60`, default `0`
+- On app boot with auto-start enabled:
+  1. Wait the configured delay
+  2. Check `R5\Saved` exists
+  3. If not found after the delay → show a **visible toast/warning** in the UI (currently only a silent `LogDebug`)
+  4. Pre-launch backup → server launch
+
+**Implementation Notes:**
+- Add `AutoStartDelaySeconds` (`int`, default `0`) to `AppSettings.cs`
+- Replace the hardcoded `Task.Delay(500)` in `AutoStartEligibleServersAsync` (`App.axaml.cs`) with `Task.Delay(TimeSpan.FromSeconds(settings.Current.AutoStartDelaySeconds))`
+- Upgrade `BackupService.CreatePreLaunchBackupAsync` silent `LogDebug` → visible `LogWarning` + toast notification when saves dir is missing
+- Add the numeric input/slider in **Settings** view with bilingual label (`EN`: *"Auto-start delay (seconds)"* / `DE`: *"Autostart-Verzögerung (Sekunden)"*)
+
+---
+
+## Progress
+
+| Feature | Status |
+|---------|--------|
+| AUTOSTART-DELAY-01 — Configurable Auto-Start Delay | Planned |
+
+---
+*Roadmap created: 2026-05-12*
