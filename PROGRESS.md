@@ -106,6 +106,7 @@
 - [ ] System tray: start minimized, close to tray, hide server console window — [#13](https://github.com/ManuelStaggl/WindroseServerManager/issues/13)
 - [ ] Translation fixes: remaining German strings in English UI — [#3](https://github.com/ManuelStaggl/WindroseServerManager/issues/3)
 - [ ] Mod conflict scanner + QoL settings page (Windrose+ multiplier sliders) — [PR #14](https://github.com/ManuelStaggl/WindroseServerManager/pull/14)
+- [ ] Configurable auto-start delay (seconds) to allow secondary drives to mount before pre-launch backup + server start — [#9](https://github.com/ManuelStaggl/WindroseServerManager/issues/9)
 
 ### v1.7.0 — Automation & CLI
 - [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart — [#9](https://github.com/ManuelStaggl/WindroseServerManager/issues/9)
