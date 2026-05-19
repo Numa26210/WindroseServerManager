@@ -11,7 +11,7 @@
         Title="{DynamicResource App.Title}"
         Icon="/Assets/app.ico"
         Width="1440" Height="960"
-        MinWidth="1024" MinHeight="640"
+        MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         WindowDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
@@ -72,9 +72,10 @@
             BorderThickness="1"
             ClipToBounds="True">
     <Panel>
-    <Grid ColumnDefinitions="240,*">
+    <Grid ColumnDefinitions="Auto,*">
 
         <Border Grid.Column="0"
+                MinWidth="200" MaxWidth="280"
                 Background="{DynamicResource BrandNavySurfaceBrush}"
                 BorderBrush="{DynamicResource BrandNavyBorderBrush}"
                 BorderThickness="0,0,1,0">

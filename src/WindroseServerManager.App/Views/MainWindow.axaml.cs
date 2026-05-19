@@ -91,6 +91,8 @@ public partial class MainWindow : Window
             item.Dismiss();
     }
 
+    private const int ResizeBorderThickness = 6;
+
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
@@ -100,8 +102,42 @@ public partial class MainWindow : Window
 
         if (e.Source is Control source && IsInteractive(source)) return;
 
+        // Edge/corner resize hit-testing (only in normal window state)
+        if (WindowState == WindowState.Normal)
+        {
+            var edge = HitTestResizeEdge(pos);
+            if (edge is not null)
+            {
+                BeginResizeDrag(edge.Value, e);
+                return;
+            }
+        }
+
         if (inTopBar)
             BeginMoveDrag(e);
+    }
+
+    private WindowEdge? HitTestResizeEdge(Point pos)
+    {
+        double x = pos.X, y = pos.Y;
+        double w = Bounds.Width, h = Bounds.Height;
+        int t = ResizeBorderThickness;
+
+        bool left   = x <= t;
+        bool right  = x >= w - t;
+        bool top    = y <= t;
+        bool bottom = y >= h - t;
+
+        if (top    && left)  return WindowEdge.NorthWest;
+        if (top    && right) return WindowEdge.NorthEast;
+        if (bottom && left)  return WindowEdge.SouthWest;
+        if (bottom && right) return WindowEdge.SouthEast;
+        if (top)    return WindowEdge.North;
+        if (bottom) return WindowEdge.South;
+        if (left)   return WindowEdge.West;
+        if (right)  return WindowEdge.East;
+
+        return null;
     }
 
     private static bool IsInteractive(Control c)
