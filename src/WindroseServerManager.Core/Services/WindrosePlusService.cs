@@ -49,6 +49,18 @@ public sealed class WindrosePlusService : IWindrosePlusService
             logLabel: "WindrosePlus",
             ct: ct);
 
+    public Task<WindrosePlusRelease> FetchByTagAsync(string tag, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+            throw new ArgumentException("Tag must not be empty.", nameof(tag));
+        return FetchReleaseAsync(
+            apiUrl: $"https://api.github.com/repos/HumanGenome/WindrosePlus/releases/tags/{Uri.EscapeDataString(tag)}",
+            metadataCachePath: Path.Combine(_cacheDir, $"tag-{tag}.json"),
+            selectAsset: assets => SelectAssetByExactName(assets, WindrosePlusAssetName),
+            logLabel: $"WindrosePlus@{tag}",
+            ct: ct);
+    }
+
     private async Task<WindrosePlusRelease> FetchReleaseAsync(
         string apiUrl,
         string metadataCachePath,

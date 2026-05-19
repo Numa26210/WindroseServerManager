@@ -45,6 +45,11 @@ public sealed class FakeGithubReleaseServer
             return Json(BuildReleaseJson(WindrosePlusTag, "WindrosePlus.zip", WindrosePlusAssetUrl, WindrosePlusArchive.Length, PublishDigest ? WindrosePlusSha256 : null));
         if (url == Ue4ssApiUrl)
             return Json(BuildReleaseJson(Ue4ssTag, "UE4SS_v3.0.1.zip", Ue4ssAssetUrl, Ue4ssArchive.Length, PublishDigest ? Ue4ssSha256 : null));
+
+        // Handle /releases/tags/{tag} for version pinning
+        if (url.StartsWith("https://api.github.com/repos/HumanGenome/WindrosePlus/releases/tags/", StringComparison.OrdinalIgnoreCase))
+            return Json(BuildReleaseJson(WindrosePlusTag, "WindrosePlus.zip", WindrosePlusAssetUrl, WindrosePlusArchive.Length, PublishDigest ? WindrosePlusSha256 : null));
+
         if (url == WindrosePlusAssetUrl)
         {
             if (FailWindrosePlusAsset)

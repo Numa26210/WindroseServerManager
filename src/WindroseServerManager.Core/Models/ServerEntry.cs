@@ -13,4 +13,16 @@ public sealed class ServerEntry
     /// flag lets admins pick individual servers instead.
     /// </summary>
     public bool AutoStartOnAppLaunch { get; set; } = false;
+
+    /// <summary>
+    /// When false, WindrosePlus is bypassed for this server (vanilla launch) even if installed.
+    /// Default true for backward compatibility — existing servers with W+ installed keep it active.
+    /// </summary>
+    public bool IsWindrosePlusEnabled { get; set; } = true;
+
+    /// <summary>
+    /// When set, WindrosePlus installs/uses this specific version tag instead of latest.
+    /// Null or empty = use the latest release.
+    /// </summary>
+    public string? PinnedWindrosePlusVersion { get; set; }
 }

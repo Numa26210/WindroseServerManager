@@ -7,6 +7,9 @@ public interface IWindrosePlusService : IDisposable
     /// <summary>Fetch latest WindrosePlus release metadata from GitHub. Returns cached metadata if offline AND cache exists. Throws <see cref="WindrosePlusOfflineException"/> if offline AND no cache.</summary>
     Task<WindrosePlusRelease> FetchLatestAsync(CancellationToken ct = default);
 
+    /// <summary>Fetch a specific WindrosePlus release by tag name. Uses GitHub /releases/tags/{tag} API.</summary>
+    Task<WindrosePlusRelease> FetchByTagAsync(string tag, CancellationToken ct = default);
+
     /// <summary>Install WindrosePlus + UE4SS into the server install dir atomically. Preserves user-owned config files. Writes .wplus-version marker.</summary>
     Task<WindrosePlusInstallResult> InstallAsync(string serverInstallDir, IProgress<InstallProgress>? progress, CancellationToken ct = default);
 

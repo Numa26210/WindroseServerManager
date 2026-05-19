@@ -146,19 +146,29 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             _logger.LogWarning(ex, "Conflict scan failed — continuing with server start");
         }
 
-        // Phase 2b: WindrosePlus pre-launch hook (async, outside lock)
-        try
+        // Phase 2b: WindrosePlus pre-launch hook — skip when toggle is off (vanilla mode)
+        var wpEntry = _settings.Current.Servers.FirstOrDefault(srv => srv.Id == _settings.Current.ActiveServerId);
+        var wpEnabled = wpEntry?.IsWindrosePlusEnabled ?? true;
+        if (wpEnabled)
         {
-            await _windrosePlus.RunPreLaunchAsync(dir, ct).ConfigureAwait(false);
+            try
+            {
+                await _windrosePlus.RunPreLaunchAsync(dir, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "RunPreLaunchAsync failed — continuing with server start");
+                AppendSystem($"[WARNUNG] Windrose+ Pre-Launch fehlgeschlagen: {ex.Message}");
+            }
         }
-        catch (OperationCanceledException)
+        else
         {
-            return false;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "RunPreLaunchAsync failed — continuing with server start");
-            AppendSystem($"[WARNUNG] Windrose+ Pre-Launch fehlgeschlagen: {ex.Message}");
+            _logger.LogInformation("WindrosePlus disabled for this server — launching in vanilla mode");
+            AppendSystem("[Info] WindrosePlus deaktiviert — Start im Vanilla-Modus.");
         }
 
         // Phase 3: start process under lock
@@ -250,18 +260,21 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             _ = _events.AppendAsync(new ServerEvent(DateTime.UtcNow, ServerEventType.Started, $"Démarrage via l'application (PID={ProcessId})", ServerName: serverName));
 
             // Start WindrosePlus dashboard server after game server starts (fire-and-forget, 2s delay)
-            _ = Task.Run(async () =>
+            if (wpEnabled)
             {
-                try
+                _ = Task.Run(async () =>
                 {
-                    await Task.Delay(2000).ConfigureAwait(false); // short delay for server process to stabilize
-                    await _windrosePlus.StartDashboardAsync(dir).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to start WindrosePlus dashboard server");
-                }
-            });
+                    try
+                    {
+                        await Task.Delay(2000).ConfigureAwait(false); // short delay for server process to stabilize
+                        await _windrosePlus.StartDashboardAsync(dir).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to start WindrosePlus dashboard server");
+                    }
+                });
+            }
 
             return true;
         }
@@ -547,8 +560,17 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
     {
         var s = _settings.Current;
         var key = string.IsNullOrWhiteSpace(dir) ? "" : Path.GetFullPath(dir);
-        var active = s.WindrosePlusActiveByServer.TryGetValue(key, out var a) && a;
-        var tag = s.WindrosePlusVersionByServer.TryGetValue(key, out var t) ? t : null;
+
+        // Read per-server toggle from ServerEntry (primary) with dict fallback for backward compat
+        var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+        var wpEnabled = entry?.IsWindrosePlusEnabled ?? true;
+        var dictActive = s.WindrosePlusActiveByServer.TryGetValue(key, out var a) && a;
+        var active = wpEnabled && dictActive;
+
+        var pinned = entry?.PinnedWindrosePlusVersion;
+        var tag = !string.IsNullOrWhiteSpace(pinned) ? pinned
+            : s.WindrosePlusVersionByServer.TryGetValue(key, out var t) ? t : null;
+
         return new ServerInstallInfo(
             IsInstalled: !string.IsNullOrWhiteSpace(dir) && Directory.Exists(dir),
             InstallDir: dir,
