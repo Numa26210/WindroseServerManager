@@ -80,6 +80,8 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🖥️ System tray: start minimized, close to tray, hide server console window
 - 🌐 Translation fixes (remaining German strings in English UI)
 - ⚠️ Mod conflict scanner + QoL settings page (Windrose+ multiplier sliders)
+- ↔️ Resizable window (better experience on RDP and multi-monitor setups)
+- ⏱️ Configurable auto-start delay (seconds) — lets secondary drives mount before pre-launch backup + server start
 
 ### v1.7.0 — Automation & CLI
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
