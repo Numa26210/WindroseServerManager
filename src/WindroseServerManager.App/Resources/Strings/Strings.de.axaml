@@ -310,6 +310,8 @@
     <sys:String x:Key="Settings.AutoStart.Hint">Trägt einen Eintrag in HKCU\Software\Microsoft\Windows\CurrentVersion\Run ein.</sys:String>
     <sys:String x:Key="Settings.AutoStartServer.Label">ALLE konfigurierten Server automatisch starten wenn die App startet</sys:String>
     <sys:String x:Key="Settings.AutoStartServer.Hint">Globaler Schalter — startet jeden Server sobald die App startet. Für einzelne Server nutze stattdessen den Auto-Start-Toggle auf der jeweiligen Server-Karte (Server-Seite). Bereits laufende Server werden übersprungen.</sys:String>
+    <sys:String x:Key="Settings.AutoStartDelay.Label">Auto-Start-Verzögerung (Sekunden)</sys:String>
+    <sys:String x:Key="Settings.AutoStartDelay.Hint">Wartezeit nach App-Start bevor Server automatisch gestartet werden. Hilfreich wenn Spieldateien auf einem sekundären Laufwerk liegen, das Zeit zum Einbinden braucht. 0 = sofort starten.</sys:String>
 
     <!-- Server-Karte: Auto-Start pro Server -->
     <sys:String x:Key="Server.AutoStart.Label">Diesen Server automatisch starten wenn die App startet</sys:String>

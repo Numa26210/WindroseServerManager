@@ -58,6 +58,7 @@ public partial class SettingsViewModel : ViewModelBase
     // Autostart
     [ObservableProperty] private bool _autoStartEnabled;
     [ObservableProperty] private bool _autoStartServerOnAppLaunch;
+    [ObservableProperty] private int _autoStartDelaySeconds;
 
     // Discord Bot Integration
     [ObservableProperty] private bool _enableDiscordBot;
@@ -79,6 +80,11 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string? _windrosePlusLatestTag;
     [ObservableProperty] private string? _windrosePlusReleaseUrl;
     [ObservableProperty] private int _windrosePlusPendingCount;
+
+    // WindrosePlus Toggle & Version Pinning (per active server)
+    [ObservableProperty] private bool _isWindrosePlusEnabled = true;
+    [ObservableProperty] private string _pinnedWindrosePlusVersion = string.Empty;
+    private bool _suppressWpSettings;
 
     public ObservableCollection<UpdateIntervalOption> WindrosePlusIntervalOptions { get; } = new();
     [ObservableProperty] private UpdateIntervalOption? _selectedWindrosePlusInterval;
@@ -134,7 +140,18 @@ public partial class SettingsViewModel : ViewModelBase
         _suppressAutoStartWrite = true;
         _autoStartEnabled = _autoStart.IsEnabled();
         _autoStartServerOnAppLaunch = c.AutoStartServerOnAppLaunch;
+        _autoStartDelaySeconds = c.AutoStartDelaySeconds;
         _suppressAutoStartWrite = false;
+
+        // WindrosePlus per-server toggle + version pin
+        _suppressWpSettings = true;
+        var activeEntry = c.Servers.FirstOrDefault(srv => srv.Id == c.ActiveServerId);
+        if (activeEntry is not null)
+        {
+            _isWindrosePlusEnabled = activeEntry.IsWindrosePlusEnabled;
+            _pinnedWindrosePlusVersion = activeEntry.PinnedWindrosePlusVersion ?? string.Empty;
+        }
+        _suppressWpSettings = false;
 
         RebuildLanguageOptions();
         _localization.LanguageChanged += OnLanguageChanged;
@@ -366,6 +383,14 @@ public partial class SettingsViewModel : ViewModelBase
             "AutoStartServerOnAppLaunch");
     }
 
+    partial void OnAutoStartDelaySecondsChanged(int value)
+    {
+        if (_suppressAutoStartWrite) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.AutoStartDelaySeconds = Math.Clamp(value, 0, 60)),
+            "AutoStartDelaySeconds");
+    }
+
     partial void OnAutoStartEnabledChanged(bool value)
     {
         if (_suppressAutoStartWrite) return;
@@ -478,6 +503,32 @@ public partial class SettingsViewModel : ViewModelBase
             try { _ = _settings.UpdateAsync(s => s.DiscordLogChannelId = id); }
             catch (Exception ex) { Log.Warning(ex, "Failed to update DiscordLogChannelId setting"); }
         }
+    }
+
+    partial void OnIsWindrosePlusEnabledChanged(bool value)
+    {
+        if (_suppressWpSettings) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s =>
+            {
+                var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+                if (entry is not null) entry.IsWindrosePlusEnabled = value;
+            }),
+            "IsWindrosePlusEnabled");
+        OnPropertyChanged(nameof(WindrosePlusStatusText));
+    }
+
+    partial void OnPinnedWindrosePlusVersionChanged(string value)
+    {
+        if (_suppressWpSettings) return;
+        var v = value?.Trim() ?? string.Empty;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s =>
+            {
+                var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+                if (entry is not null) entry.PinnedWindrosePlusVersion = string.IsNullOrWhiteSpace(v) ? null : v;
+            }),
+            "PinnedWindrosePlusVersion");
     }
 
     public string AppVersion =>

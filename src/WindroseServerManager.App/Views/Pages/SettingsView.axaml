@@ -91,6 +91,16 @@
                     <TextBlock Classes="caption" TextWrapping="Wrap"
                                Text="{DynamicResource Settings.AutoStartServer.Hint}" />
 
+                    <StackPanel Spacing="4" IsVisible="{Binding AutoStartServerOnAppLaunch}">
+                        <TextBlock Classes="caption"
+                                   Text="{DynamicResource Settings.AutoStartDelay.Label}" />
+                        <NumericUpDown Value="{Binding AutoStartDelaySeconds}"
+                                       Minimum="0" Maximum="60" FormatString="0"
+                                       HorizontalAlignment="Left" MaxWidth="160" />
+                        <TextBlock Classes="caption" TextWrapping="Wrap"
+                                   Text="{DynamicResource Settings.AutoStartDelay.Hint}" />
+                    </StackPanel>
+
                     <CheckBox Content="{DynamicResource Settings.LaunchArgs.ConsoleLog}"
                               IsChecked="{Binding LogEnabled}" />
 
@@ -241,6 +251,33 @@
                                    FontWeight="SemiBold"
                                    Text="{Binding WindrosePlusStatusText}" />
                     </StackPanel>
+
+                    <!-- W+ Toggle -->
+                    <CheckBox Content="{DynamicResource Settings.WindrosePlus.Toggle.Label}"
+                              IsChecked="{Binding IsWindrosePlusEnabled}" />
+                    <TextBlock Classes="caption" TextWrapping="Wrap"
+                               Text="{DynamicResource Settings.WindrosePlus.Toggle.Hint}" />
+
+                    <!-- Vanilla mode warning -->
+                    <Border Classes="card" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                            Padding="10,6" CornerRadius="4"
+                            IsVisible="{Binding !IsWindrosePlusEnabled}">
+                        <TextBlock Classes="caption" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource BrandAmberBrush}"
+                                   Text="{DynamicResource Settings.WindrosePlus.VanillaWarning}" />
+                    </Border>
+
+                    <!-- Version Pinning -->
+                    <StackPanel Spacing="4" IsVisible="{Binding IsWindrosePlusEnabled}">
+                        <TextBlock Classes="caption"
+                                   Text="{DynamicResource Settings.WindrosePlus.Version.Label}" />
+                        <TextBox Text="{Binding PinnedWindrosePlusVersion}"
+                                 PlaceholderText="{DynamicResource Settings.WindrosePlus.Version.Placeholder}"
+                                 MaxWidth="300" HorizontalAlignment="Left" />
+                        <TextBlock Classes="caption" TextWrapping="Wrap"
+                                   Text="{DynamicResource Settings.WindrosePlus.Version.Hint}" />
+                    </StackPanel>
+
                     <Button Content="{DynamicResource Settings.WindrosePlus.ManageButton}"
                             Command="{Binding OpenWindrosePlusDialogCommand}"
                             IsEnabled="{Binding HasServerConfigured}"

@@ -15,12 +15,14 @@ public sealed class BackupService : IBackupService
     private readonly ILogger<BackupService> _logger;
     private readonly IAppSettingsService _settings;
     private readonly IServerEventLog _eventLog;
+    private readonly INotificationService? _notifications;
 
-    public BackupService(ILogger<BackupService> logger, IAppSettingsService settings, IServerEventLog eventLog)
+    public BackupService(ILogger<BackupService> logger, IAppSettingsService settings, IServerEventLog eventLog, INotificationService? notifications = null)
     {
         _logger = logger;
         _settings = settings;
         _eventLog = eventLog;
+        _notifications = notifications;
     }
 
     public string GetBackupDir()
@@ -97,7 +99,8 @@ public sealed class BackupService : IBackupService
         var saves = GetSavesDir();
         if (saves is null)
         {
-            _logger.LogDebug("Skipping {Prefix} backup: saves directory not found", prefix);
+            _logger.LogWarning("Skipping {Prefix} backup: saves directory not found — server may not be installed yet or secondary drive not mounted", prefix);
+            _notifications?.NotifyWarning($"Skipping {prefix.TrimEnd('-')} backup: saves directory not found.");
             return null;
         }
 

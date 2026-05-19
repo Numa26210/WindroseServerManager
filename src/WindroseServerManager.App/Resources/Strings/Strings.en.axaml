@@ -310,6 +310,8 @@
     <sys:String x:Key="Settings.AutoStart.Hint">Adds an entry to HKCU\Software\Microsoft\Windows\CurrentVersion\Run.</sys:String>
     <sys:String x:Key="Settings.AutoStartServer.Label">Auto-start ALL configured servers when the app launches</sys:String>
     <sys:String x:Key="Settings.AutoStartServer.Hint">Global shortcut that starts every server on app launch. For fine-grained control, use the per-server auto-start toggle on each server card (Server page) instead. Already-running servers are skipped.</sys:String>
+    <sys:String x:Key="Settings.AutoStartDelay.Label">Auto-start delay (seconds)</sys:String>
+    <sys:String x:Key="Settings.AutoStartDelay.Hint">Wait time after app launch before auto-starting servers. Useful when game files are on a secondary drive that needs time to mount. 0 = start immediately.</sys:String>
 
     <!-- Per-server card auto-start -->
     <sys:String x:Key="Server.AutoStart.Label">Auto-start this server when the app launches</sys:String>

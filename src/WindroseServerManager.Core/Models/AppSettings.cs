@@ -103,4 +103,11 @@ public sealed class AppSettings
     /// Idempotent: any server already running is skipped.
     /// </summary>
     public bool AutoStartServerOnAppLaunch { get; set; } = false;
+
+    /// <summary>
+    /// Seconds to wait after app launch before auto-starting eligible servers.
+    /// Useful when game files live on secondary drives that need time to mount.
+    /// Range: 0–60. Default: 0 (no delay beyond the internal 500ms grace period).
+    /// </summary>
+    public int AutoStartDelaySeconds { get; set; } = 0;
 }
