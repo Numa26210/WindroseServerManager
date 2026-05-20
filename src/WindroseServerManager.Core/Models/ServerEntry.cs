@@ -25,4 +25,14 @@ public sealed class ServerEntry
     /// Null or empty = use the latest release.
     /// </summary>
     public string? PinnedWindrosePlusVersion { get; set; }
+
+    /// <summary>
+    /// Override backup directory for this server. Null = use global BackupDir from AppSettings.
+    /// </summary>
+    public string? BackupDirOverride { get; set; }
+
+    /// <summary>
+    /// Override mods directory for this server. Null = use default R5\Content\Paks\~mods under InstallDir.
+    /// </summary>
+    public string? ModsDirOverride { get; set; }
 }

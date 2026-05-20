@@ -263,6 +263,16 @@
     <sys:String x:Key="Settings.Group.General">ALLGEMEIN</sys:String>
     <sys:String x:Key="Settings.Group.About">ÜBER</sys:String>
     <sys:String x:Key="Settings.Group.Discord">DISCORD</sys:String>
+    <sys:String x:Key="Settings.Group.PerServerFolders">SERVER-SPEZIFISCHE ORDNER</sys:String>
+
+    <!-- Per-Server Folders -->
+    <sys:String x:Key="Settings.PerServer.BackupDir.Title">Backup-Ordner</sys:String>
+    <sys:String x:Key="Settings.PerServer.BackupDir.Hint">Backup-Ziel für diesen Server überschreiben. Leer lassen um den globalen Backup-Ordner zu verwenden.</sys:String>
+    <sys:String x:Key="Settings.PerServer.BackupDir.Placeholder">Globaler Backup-Ordner wird verwendet</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Title">Mods-Ordner</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Hint">Mods-Verzeichnis für diesen Server überschreiben. Leer lassen um den Standardpfad unter dem Server-Installationsverzeichnis zu verwenden.</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Placeholder">Standard-Mods-Ordner wird verwendet</sys:String>
+    <sys:String x:Key="Settings.PerServer.Reset">Auf Standard zurücksetzen</sys:String>
     <sys:String x:Key="Settings.Save.Title">Einstellungen speichern</sys:String>
     <sys:String x:Key="Settings.Save.Hint">Server-Start und Steam-Einstellungen werden beim nächsten Start übernommen.</sys:String>
     <sys:String x:Key="Settings.Language.Title">Sprache</sys:String>
@@ -396,6 +406,7 @@
     <sys:String x:Key="Toast.ActiveWorldFormat">Aktive Welt: {0}</sys:String>
     <sys:String x:Key="Toast.WorldDeletedFormat">Welt gelöscht: {0}</sys:String>
     <sys:String x:Key="Toast.BackupDirUpdated">Backup-Ordner aktualisiert.</sys:String>
+    <sys:String x:Key="Toast.ModsDirUpdated">Mods-Ordner aktualisiert.</sys:String>
     <sys:String x:Key="Toast.BackupCreatedFormat">Backup erstellt: {0}</sys:String>
     <sys:String x:Key="Toast.BackupBeforeStart">Backup wird erstellt, bevor der Server startet...</sys:String>
     <sys:String x:Key="Dashboard.Start.WithBackup">Backup erstellen, dann starten</sys:String>

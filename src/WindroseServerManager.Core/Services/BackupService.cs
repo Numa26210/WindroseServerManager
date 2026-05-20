@@ -27,7 +27,12 @@ public sealed class BackupService : IBackupService
 
     public string GetBackupDir()
     {
-        var dir = _settings.Current.BackupDir;
+        var entry = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId);
+        var dir = entry?.BackupDirOverride;
+        if (string.IsNullOrWhiteSpace(dir))
+        {
+            dir = _settings.Current.BackupDir;
+        }
         if (string.IsNullOrWhiteSpace(dir))
         {
             dir = Path.Combine(

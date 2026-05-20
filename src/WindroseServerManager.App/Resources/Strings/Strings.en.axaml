@@ -263,6 +263,16 @@
     <sys:String x:Key="Settings.Group.General">GENERAL</sys:String>
     <sys:String x:Key="Settings.Group.About">ABOUT</sys:String>
     <sys:String x:Key="Settings.Group.Discord">DISCORD</sys:String>
+    <sys:String x:Key="Settings.Group.PerServerFolders">PER-SERVER FOLDERS</sys:String>
+
+    <!-- Per-Server Folders -->
+    <sys:String x:Key="Settings.PerServer.BackupDir.Title">Backup folder</sys:String>
+    <sys:String x:Key="Settings.PerServer.BackupDir.Hint">Override the backup destination for this server. Leave empty to use the global backup folder.</sys:String>
+    <sys:String x:Key="Settings.PerServer.BackupDir.Placeholder">Using global backup folder</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Title">Mods folder</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Hint">Override the mods directory for this server. Leave empty to use the default location under the server install dir.</sys:String>
+    <sys:String x:Key="Settings.PerServer.ModsDir.Placeholder">Using default mods folder</sys:String>
+    <sys:String x:Key="Settings.PerServer.Reset">Reset to default</sys:String>
     <sys:String x:Key="Settings.Save.Title">Save settings</sys:String>
     <sys:String x:Key="Settings.Save.Hint">Server start and Steam settings take effect on the next launch.</sys:String>
     <sys:String x:Key="Settings.Language.Title">Language</sys:String>
@@ -396,6 +406,7 @@
     <sys:String x:Key="Toast.ActiveWorldFormat">Active world: {0}</sys:String>
     <sys:String x:Key="Toast.WorldDeletedFormat">World deleted: {0}</sys:String>
     <sys:String x:Key="Toast.BackupDirUpdated">Backup folder updated.</sys:String>
+    <sys:String x:Key="Toast.ModsDirUpdated">Mods folder updated.</sys:String>
     <sys:String x:Key="Toast.BackupCreatedFormat">Backup created: {0}</sys:String>
     <sys:String x:Key="Toast.BackupBeforeStart">Creating backup before starting server...</sys:String>
     <sys:String x:Key="Dashboard.Start.WithBackup">Create backup, then start</sys:String>

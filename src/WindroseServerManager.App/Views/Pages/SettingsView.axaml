@@ -369,6 +369,49 @@
             </Border>
 
             <!-- ════════════════════════════════════════════════════════════════
+                 GRUPPE 5: PER-SERVER FOLDERS
+            ════════════════════════════════════════════════════════════════ -->
+            <TextBlock Classes="group-label" Text="{DynamicResource Settings.Group.PerServerFolders}" />
+
+            <!-- Backup folder override -->
+            <Border Classes="card" Margin="0,0,0,12">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="section-header" Text="{DynamicResource Settings.PerServer.BackupDir.Title}" />
+                    <TextBlock Classes="caption" TextWrapping="Wrap"
+                               Text="{DynamicResource Settings.PerServer.BackupDir.Hint}" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <TextBox Grid.Column="0" Text="{Binding BackupDirOverride}"
+                                 IsReadOnly="True"
+                                 PlaceholderText="{DynamicResource Settings.PerServer.BackupDir.Placeholder}" />
+                        <Button Grid.Column="1" Content="{DynamicResource Action.Browse}"
+                                Command="{Binding BrowseBackupDirCommand}" />
+                        <Button Grid.Column="2" Content="{DynamicResource Settings.PerServer.Reset}"
+                                Command="{Binding ResetBackupDirCommand}"
+                                IsEnabled="{Binding BackupDirOverride, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Mods folder override -->
+            <Border Classes="card" Margin="0,0,0,12">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="section-header" Text="{DynamicResource Settings.PerServer.ModsDir.Title}" />
+                    <TextBlock Classes="caption" TextWrapping="Wrap"
+                               Text="{DynamicResource Settings.PerServer.ModsDir.Hint}" />
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <TextBox Grid.Column="0" Text="{Binding ModsDirOverride}"
+                                 IsReadOnly="True"
+                                 PlaceholderText="{DynamicResource Settings.PerServer.ModsDir.Placeholder}" />
+                        <Button Grid.Column="1" Content="{DynamicResource Action.Browse}"
+                                Command="{Binding BrowseModsDirCommand}" />
+                        <Button Grid.Column="2" Content="{DynamicResource Settings.PerServer.Reset}"
+                                Command="{Binding ResetModsDirCommand}"
+                                IsEnabled="{Binding ModsDirOverride, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ════════════════════════════════════════════════════════════════
                  GRUPPE 4: ÜBER
             ════════════════════════════════════════════════════════════════ -->
             <TextBlock Classes="group-label" Text="{DynamicResource Settings.Group.About}" />

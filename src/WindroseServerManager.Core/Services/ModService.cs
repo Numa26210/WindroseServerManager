@@ -38,6 +38,13 @@ public sealed class ModService : IModService
 
     public string? GetModsDir()
     {
+        var entry = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId);
+        var overrideDir = entry?.ModsDirOverride;
+        if (!string.IsNullOrWhiteSpace(overrideDir))
+        {
+            Directory.CreateDirectory(overrideDir);
+            return overrideDir;
+        }
         var install = _settings.ActiveServerDir;
         if (string.IsNullOrWhiteSpace(install)) return null;
         var dir = Path.Combine(install, ModsRelativeDir);

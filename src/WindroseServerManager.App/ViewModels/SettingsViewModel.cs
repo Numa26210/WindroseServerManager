@@ -91,6 +91,10 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string? _installedWindrosePlusVersion;
     public ObservableCollection<string> AvailableWindrosePlusVersions { get; } = new();
 
+    [ObservableProperty] private string _backupDirOverride = string.Empty;
+    [ObservableProperty] private string _modsDirOverride = string.Empty;
+    private bool _suppressDirOverrides;
+
     public ObservableCollection<UpdateIntervalOption> WindrosePlusIntervalOptions { get; } = new();
     [ObservableProperty] private UpdateIntervalOption? _selectedWindrosePlusInterval;
     private bool _suppressIntervalWrite;
@@ -157,6 +161,14 @@ public partial class SettingsViewModel : ViewModelBase
             _pinnedWindrosePlusVersion = activeEntry.PinnedWindrosePlusVersion ?? string.Empty;
         }
         _suppressWpSettings = false;
+
+        _suppressDirOverrides = true;
+        if (activeEntry is not null)
+        {
+            _backupDirOverride = activeEntry.BackupDirOverride ?? string.Empty;
+            _modsDirOverride = activeEntry.ModsDirOverride ?? string.Empty;
+        }
+        _suppressDirOverrides = false;
 
         RebuildLanguageOptions();
         _localization.LanguageChanged += OnLanguageChanged;
@@ -596,6 +608,72 @@ public partial class SettingsViewModel : ViewModelBase
             }),
             "PinnedWindrosePlusVersion");
     }
+
+    partial void OnBackupDirOverrideChanged(string value)
+    {
+        if (_suppressDirOverrides) return;
+        var v = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        SafeFireAndForget(
+            _settings.UpdateAsync(s =>
+            {
+                var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+                if (entry is not null) entry.BackupDirOverride = v;
+            }),
+            "BackupDirOverride");
+        if (v is not null) _toasts.Success(Loc.Get("Toast.BackupDirUpdated"));
+    }
+
+    partial void OnModsDirOverrideChanged(string value)
+    {
+        if (_suppressDirOverrides) return;
+        var v = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        SafeFireAndForget(
+            _settings.UpdateAsync(s =>
+            {
+                var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+                if (entry is not null) entry.ModsDirOverride = v;
+            }),
+            "ModsDirOverride");
+        if (v is not null) _toasts.Success(Loc.Get("Toast.ModsDirUpdated"));
+    }
+
+    [RelayCommand]
+    private async Task BrowseBackupDirAsync()
+    {
+        var top = Avalonia.Application.Current?.ApplicationLifetime
+            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime d ? d.MainWindow : null;
+        if (top is null) return;
+        var picks = await top.StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+        {
+            Title = Loc.Get("Settings.PerServer.BackupDir.Title")
+        });
+        if (picks.Count > 0)
+        {
+            BackupDirOverride = picks[0].Path.LocalPath;
+        }
+    }
+
+    [RelayCommand]
+    private void ResetBackupDir() => BackupDirOverride = string.Empty;
+
+    [RelayCommand]
+    private async Task BrowseModsDirAsync()
+    {
+        var top = Avalonia.Application.Current?.ApplicationLifetime
+            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime d ? d.MainWindow : null;
+        if (top is null) return;
+        var picks = await top.StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+        {
+            Title = Loc.Get("Settings.PerServer.ModsDir.Title")
+        });
+        if (picks.Count > 0)
+        {
+            ModsDirOverride = picks[0].Path.LocalPath;
+        }
+    }
+
+    [RelayCommand]
+    private void ResetModsDir() => ModsDirOverride = string.Empty;
 
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.2.5";
