@@ -425,6 +425,11 @@
     <sys:String x:Key="Toast.LogFolderMissing">UE5-Log-Ordner existiert noch nicht (Server mindestens einmal starten).</sys:String>
     <sys:String x:Key="Toast.Cancelled">Abgebrochen.</sys:String>
 
+    <!-- Windrose+ Toggle -->
+    <sys:String x:Key="Toast.WindrosePlusEnabled">Windrose+ aktiviert. Server neu starten zum Übernehmen.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusDisabled">Windrose+ deaktiviert — Vanilla-Modus. Server neu starten zum Übernehmen.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusToggleRestartRequired">Server läuft — bitte neu starten um Windrose+-Änderungen zu übernehmen.</sys:String>
+
     <!-- Confirm Dialog labels -->
     <sys:String x:Key="Confirm.Kill.Title">Prozess hart beenden</sys:String>
     <sys:String x:Key="Confirm.Kill.Message">Ungesicherte Welt-Änderungen gehen verloren. Trotzdem beenden?</sys:String>

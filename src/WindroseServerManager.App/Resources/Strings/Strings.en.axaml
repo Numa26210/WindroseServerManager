@@ -425,6 +425,11 @@
     <sys:String x:Key="Toast.LogFolderMissing">UE5 log folder does not exist yet (start the server at least once).</sys:String>
     <sys:String x:Key="Toast.Cancelled">Cancelled.</sys:String>
 
+    <!-- Windrose+ Toggle -->
+    <sys:String x:Key="Toast.WindrosePlusEnabled">Windrose+ enabled. Restart the server to apply.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusDisabled">Windrose+ disabled — launching in vanilla mode. Restart the server to apply.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusToggleRestartRequired">Server is running — please restart to apply Windrose+ changes.</sys:String>
+
     <!-- Confirm Dialog labels -->
     <sys:String x:Key="Confirm.Kill.Title">Force-kill process</sys:String>
     <sys:String x:Key="Confirm.Kill.Message">Unsaved world changes will be lost. Terminate anyway?</sys:String>

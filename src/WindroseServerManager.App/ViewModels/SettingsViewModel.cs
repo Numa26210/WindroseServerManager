@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using Avalonia.Input.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -508,6 +509,24 @@ public partial class SettingsViewModel : ViewModelBase
     partial void OnIsWindrosePlusEnabledChanged(bool value)
     {
         if (_suppressWpSettings) return;
+
+        var serverDir = _settings.ActiveServerDir;
+        var hasWplusFiles = !string.IsNullOrWhiteSpace(serverDir)
+            && File.Exists(Path.Combine(serverDir, ".wplus-version"));
+
+        if (value && !hasWplusFiles)
+        {
+            SafeFireAndForget(
+                _settings.UpdateAsync(s =>
+                {
+                    var entry = s.Servers.FirstOrDefault(srv => srv.Id == s.ActiveServerId);
+                    if (entry is not null) entry.IsWindrosePlusEnabled = true;
+                }),
+                "IsWindrosePlusEnabled");
+            SafeFireAndForget(OpenWindrosePlusDialogAsync(), "WplusToggleInstallPrompt");
+            return;
+        }
+
         SafeFireAndForget(
             _settings.UpdateAsync(s =>
             {
@@ -515,6 +534,16 @@ public partial class SettingsViewModel : ViewModelBase
                 if (entry is not null) entry.IsWindrosePlusEnabled = value;
             }),
             "IsWindrosePlusEnabled");
+
+        if (value)
+            _toasts.Success(Loc.Get("Toast.WindrosePlusEnabled"));
+        else
+            _toasts.Success(Loc.Get("Toast.WindrosePlusDisabled"));
+
+        var server = App.Services.GetService(typeof(IServerProcessService)) as IServerProcessService;
+        if (server?.Status is ServerStatus.Running or ServerStatus.Starting)
+            _toasts.Warning(Loc.Get("Toast.WindrosePlusToggleRestartRequired"));
+
         OnPropertyChanged(nameof(WindrosePlusStatusText));
     }
 

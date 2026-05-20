@@ -123,4 +123,51 @@ public class WindrosePlusToggleAndVersionTests
             NullAppSettingsService.Instance,
             fixture.CacheDir);
     }
+
+    // ---- Feature 3: Toggle without reinstall ----
+
+    [Fact]
+    public void ToggleOff_DoesNotAffectVersionMarkerFile()
+    {
+        using var fixture = new TempServerFixture();
+        var markerPath = Path.Combine(fixture.ServerDir, ".wplus-version");
+        File.WriteAllText(markerPath, """{"Tag":"v1.0.0","InstalledUtc":"2026-01-01T00:00:00Z","ArchiveSha256":"ABC"}""");
+
+        var entry = new ServerEntry { InstallDir = fixture.ServerDir, IsWindrosePlusEnabled = false };
+        Assert.False(entry.IsWindrosePlusEnabled);
+        Assert.True(File.Exists(markerPath));
+    }
+
+    [Fact]
+    public void ToggleOn_WithFilesPresent_KeepsFiles()
+    {
+        using var fixture = new TempServerFixture();
+        var markerPath = Path.Combine(fixture.ServerDir, ".wplus-version");
+        File.WriteAllText(markerPath, """{"Tag":"v1.0.0","InstalledUtc":"2026-01-01T00:00:00Z","ArchiveSha256":"ABC"}""");
+
+        var entry = new ServerEntry { InstallDir = fixture.ServerDir, IsWindrosePlusEnabled = true };
+        Assert.True(entry.IsWindrosePlusEnabled);
+        Assert.True(File.Exists(markerPath));
+    }
+
+    [Fact]
+    public async Task VersionMarkerReadable_AfterToggleOffOn()
+    {
+        using var fixture = new TempServerFixture();
+        var github = new FakeGithubReleaseServer();
+        var svc = CreateService(fixture, github.CreateHandler());
+
+        var markerPath = Path.Combine(fixture.ServerDir, ".wplus-version");
+        File.WriteAllText(markerPath, """{"Tag":"v1.0.0","InstalledUtc":"2026-01-01T00:00:00Z","ArchiveSha256":"ABC"}""");
+
+        var entry = new ServerEntry { InstallDir = fixture.ServerDir, IsWindrosePlusEnabled = false };
+        Assert.False(entry.IsWindrosePlusEnabled);
+
+        entry.IsWindrosePlusEnabled = true;
+        Assert.True(entry.IsWindrosePlusEnabled);
+
+        var marker = svc.ReadVersionMarker(fixture.ServerDir);
+        Assert.NotNull(marker);
+        Assert.Equal("v1.0.0", marker!.Tag);
+    }
 }
