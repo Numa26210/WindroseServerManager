@@ -342,9 +342,10 @@
     <sys:String x:Key="Settings.WindrosePlus.Toggle.Label">Windrose+ für diesen Server aktivieren</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Toggle.Hint">Wenn ausgeschaltet, startet der Server im Vanilla-Modus, auch wenn Windrose+ installiert ist. Server neu starten um Änderungen zu übernehmen.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Label">Festgepinnte Version</sys:String>
-    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Windrose+ auf einen bestimmten Release-Tag festpinnen. Leer lassen um immer die neueste Version zu verwenden.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Windrose+ auf einen bestimmten Release-Tag festpinnen. Leer lassen oder „(Neueste)" wählen um immer die neueste Version zu verwenden.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Latest">(Neueste)</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Placeholder">z.B. v1.3.0</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.InstalledLabel">Installiert:</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.VanillaWarning">Vanilla-Modus — Windrose+-Funktionen für diesen Server deaktiviert.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Title">App-Updates</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Hint">Prüft auf GitHub nach einer neueren Version des Windrose Server Managers. Automatisch alle 6 Stunden.</sys:String>

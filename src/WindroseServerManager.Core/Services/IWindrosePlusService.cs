@@ -10,6 +10,9 @@ public interface IWindrosePlusService : IDisposable
     /// <summary>Fetch a specific WindrosePlus release by tag name. Uses GitHub /releases/tags/{tag} API.</summary>
     Task<WindrosePlusRelease> FetchByTagAsync(string tag, CancellationToken ct = default);
 
+    /// <summary>Fetch all available WindrosePlus releases from GitHub. Returns tag names only (lightweight).</summary>
+    Task<IReadOnlyList<string>> FetchAllReleaseTagsAsync(CancellationToken ct = default);
+
     /// <summary>Install WindrosePlus + UE4SS into the server install dir atomically. Preserves user-owned config files. Writes .wplus-version marker.</summary>
     Task<WindrosePlusInstallResult> InstallAsync(string serverInstallDir, IProgress<InstallProgress>? progress, CancellationToken ct = default);
 

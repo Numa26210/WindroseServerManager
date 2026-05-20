@@ -61,6 +61,42 @@ public sealed class WindrosePlusService : IWindrosePlusService
             ct: ct);
     }
 
+    public async Task<IReadOnlyList<string>> FetchAllReleaseTagsAsync(CancellationToken ct = default)
+    {
+        using var http = _httpFactory.CreateClient(HttpClientName);
+        http.Timeout = TimeSpan.FromSeconds(10);
+        http.DefaultRequestHeaders.UserAgent.Clear();
+        http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(UserAgent, "1.6.0"));
+        http.DefaultRequestHeaders.Accept.Clear();
+        http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+
+        var tags = new List<string>();
+        int page = 1;
+        while (true)
+        {
+            var url = $"https://api.github.com/repos/HumanGenome/WindrosePlus/releases?per_page=100&page={page}";
+            using var resp = await http.GetAsync(url, ct).ConfigureAwait(false);
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0) break;
+            foreach (var release in root.EnumerateArray())
+            {
+                if (release.TryGetProperty("draft", out var draft) && draft.ValueKind == JsonValueKind.True) continue;
+                if (release.TryGetProperty("prerelease", out var pre) && pre.ValueKind == JsonValueKind.True) continue;
+                if (release.TryGetProperty("tag_name", out var tagEl))
+                {
+                    var t = tagEl.GetString();
+                    if (!string.IsNullOrWhiteSpace(t)) tags.Add(t!);
+                }
+            }
+            if (root.GetArrayLength() < 100) break;
+            page++;
+        }
+        return tags;
+    }
+
     private async Task<WindrosePlusRelease> FetchReleaseAsync(
         string apiUrl,
         string metadataCachePath,

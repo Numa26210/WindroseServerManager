@@ -342,9 +342,10 @@
     <sys:String x:Key="Settings.WindrosePlus.Toggle.Label">Enable Windrose+ for this server</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Toggle.Hint">When off, the server launches in vanilla mode even if Windrose+ is installed. Restart the server to apply changes.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Label">Pinned version</sys:String>
-    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Lock Windrose+ to a specific release tag. Leave empty to always use the latest version.</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.Hint">Lock Windrose+ to a specific release tag. Leave empty or select "(Latest)" to always use the latest version.</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Latest">(Latest)</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.Version.Placeholder">e.g. v1.3.0</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Version.InstalledLabel">Installed:</sys:String>
     <sys:String x:Key="Settings.WindrosePlus.VanillaWarning">Vanilla mode — Windrose+ features disabled for this server.</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Title">App updates</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Hint">Checks GitHub for a newer version of Windrose Server Manager. Automatic every 6 hours.</sys:String>

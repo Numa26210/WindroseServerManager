@@ -50,6 +50,10 @@ public sealed class FakeGithubReleaseServer
         if (url.StartsWith("https://api.github.com/repos/HumanGenome/WindrosePlus/releases/tags/", StringComparison.OrdinalIgnoreCase))
             return Json(BuildReleaseJson(WindrosePlusTag, "WindrosePlus.zip", WindrosePlusAssetUrl, WindrosePlusArchive.Length, PublishDigest ? WindrosePlusSha256 : null));
 
+        // Handle /releases list for version dropdown
+        if (url.StartsWith("https://api.github.com/repos/HumanGenome/WindrosePlus/releases?", StringComparison.OrdinalIgnoreCase))
+            return Json("[" + BuildReleaseJson(WindrosePlusTag, "WindrosePlus.zip", WindrosePlusAssetUrl, WindrosePlusArchive.Length, PublishDigest ? WindrosePlusSha256 : null) + "]");
+
         if (url == WindrosePlusAssetUrl)
         {
             if (FailWindrosePlusAsset)

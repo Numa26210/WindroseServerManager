@@ -87,6 +87,10 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private string _pinnedWindrosePlusVersion = string.Empty;
     private bool _suppressWpSettings;
 
+    [ObservableProperty] private bool _isVersionListLoading;
+    [ObservableProperty] private string? _installedWindrosePlusVersion;
+    public ObservableCollection<string> AvailableWindrosePlusVersions { get; } = new();
+
     public ObservableCollection<UpdateIntervalOption> WindrosePlusIntervalOptions { get; } = new();
     [ObservableProperty] private UpdateIntervalOption? _selectedWindrosePlusInterval;
     private bool _suppressIntervalWrite;
@@ -163,6 +167,37 @@ public partial class SettingsViewModel : ViewModelBase
 
         _settings.Changed += OnSettingsChanged;
         SafeFireAndForget(CheckFirewallCoreAsync(showToast: false), "CheckFirewall");
+        SafeFireAndForget(LoadWindrosePlusVersionsAsync(), "LoadWplusVersions");
+        LoadInstalledWindrosePlusVersion();
+    }
+
+    private async Task LoadWindrosePlusVersionsAsync()
+    {
+        try
+        {
+            IsVersionListLoading = true;
+            var tags = await _wplus.FetchAllReleaseTagsAsync().ConfigureAwait(false);
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                AvailableWindrosePlusVersions.Clear();
+                AvailableWindrosePlusVersions.Add(Loc.Get("Settings.WindrosePlus.Version.Latest"));
+                foreach (var t in tags)
+                    AvailableWindrosePlusVersions.Add(t);
+                IsVersionListLoading = false;
+            });
+        }
+        catch
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => IsVersionListLoading = false);
+        }
+    }
+
+    private void LoadInstalledWindrosePlusVersion()
+    {
+        var dir = _settings.ActiveServerDir;
+        if (string.IsNullOrWhiteSpace(dir)) { InstalledWindrosePlusVersion = null; return; }
+        var marker = _wplus.ReadVersionMarker(dir);
+        InstalledWindrosePlusVersion = marker?.Tag;
     }
 
     /// <summary>
@@ -551,6 +586,8 @@ public partial class SettingsViewModel : ViewModelBase
     {
         if (_suppressWpSettings) return;
         var v = value?.Trim() ?? string.Empty;
+        var latestLabel = Loc.Get("Settings.WindrosePlus.Version.Latest");
+        if (string.Equals(v, latestLabel, StringComparison.OrdinalIgnoreCase)) v = string.Empty;
         SafeFireAndForget(
             _settings.UpdateAsync(s =>
             {

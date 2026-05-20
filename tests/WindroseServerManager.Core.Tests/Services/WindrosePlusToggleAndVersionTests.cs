@@ -124,6 +124,19 @@ public class WindrosePlusToggleAndVersionTests
             fixture.CacheDir);
     }
 
+    // ---------- FetchAllReleaseTagsAsync ----------
+
+    [Fact]
+    public async Task FetchAllReleaseTagsAsync_ReturnsTags()
+    {
+        using var fixture = new TempServerFixture();
+        var github = new FakeGithubReleaseServer();
+        var svc = CreateService(fixture, github.CreateHandler());
+        var tags = await svc.FetchAllReleaseTagsAsync(CancellationToken.None);
+        Assert.NotEmpty(tags);
+        Assert.Contains(tags, t => !string.IsNullOrWhiteSpace(t));
+    }
+
     // ---- Feature 3: Toggle without reinstall ----
 
     [Fact]
