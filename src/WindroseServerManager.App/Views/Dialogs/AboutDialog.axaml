@@ -45,13 +45,16 @@
                 <TextBlock Classes="body" TextWrapping="Wrap"
                            Text="{DynamicResource About.Tagline}" />
                 <TextBlock Classes="caption" Text="{DynamicResource Settings.About.License}" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Foreground="{DynamicResource BrandAmberBrush}"
+                           Text="Fork maintained by Numa26210" />
 
                 <StackPanel Spacing="6" Margin="0,12,0,0">
                     <Button Classes="subtle" HorizontalAlignment="Left"
                             Content="{DynamicResource About.SteamLink}" Tag="https://store.steampowered.com/app/3041230/Windrose/"
                             Click="OnLinkClick" />
                     <Button Classes="subtle" HorizontalAlignment="Left"
-                            Content="{DynamicResource About.GitHubLink}" Tag="https://github.com/ManuelStaggl/WindroseServerManager"
+                             Content="{DynamicResource About.GitHubLink}" Tag="https://github.com/Numa26210/WindroseServerManager"
                             Click="OnLinkClick" />
                 </StackPanel>
 
