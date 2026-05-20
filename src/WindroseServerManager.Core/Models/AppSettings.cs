@@ -110,4 +110,10 @@ public sealed class AppSettings
     /// Range: 0–60. Default: 0 (no delay beyond the internal 500ms grace period).
     /// </summary>
     public int AutoStartDelaySeconds { get; set; } = 0;
+
+    /// <summary>
+    /// When true, closing the main window hides it to the system tray instead of exiting the app.
+    /// The app can be fully quit via the tray menu "Quit" option. Default: false.
+    /// </summary>
+    public bool CloseToTray { get; set; } = false;
 }

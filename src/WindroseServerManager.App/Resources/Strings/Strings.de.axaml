@@ -362,6 +362,9 @@
     <sys:String x:Key="Settings.AppUpdate.CheckNow">Jetzt auf Update prüfen</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Download">Download starten</sys:String>
     <sys:String x:Key="Settings.AppUpdate.OpenReleasePage">Release-Seite öffnen</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Title">Beim Schließen in den Tray minimieren</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Label">Beim Schließen in den Tray minimieren statt beenden</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Hint">Die App läuft im Hintergrund weiter, wenn das Fenster geschlossen wird. Zum vollständigen Beenden die Option "Beenden" im Tray-Menü verwenden.</sys:String>
     <sys:String x:Key="Settings.About.Title">Über</sys:String>
     <sys:String x:Key="Settings.About.VersionFormat">Version {0}</sys:String>
     <sys:String x:Key="Settings.About.License">MIT Lizenz · © 2026 Manuel Staggl</sys:String>

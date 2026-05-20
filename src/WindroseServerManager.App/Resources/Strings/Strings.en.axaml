@@ -362,6 +362,9 @@
     <sys:String x:Key="Settings.AppUpdate.CheckNow">Check for update now</sys:String>
     <sys:String x:Key="Settings.AppUpdate.Download">Start download</sys:String>
     <sys:String x:Key="Settings.AppUpdate.OpenReleasePage">Open release page</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Title">Close to system tray</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Label">Minimize to tray on close instead of quitting</sys:String>
+    <sys:String x:Key="Settings.CloseToTray.Hint">The app stays running in the background when closing the window. Use the tray icon's "Quit" option to fully exit.</sys:String>
     <sys:String x:Key="Settings.About.Title">About</sys:String>
     <sys:String x:Key="Settings.About.VersionFormat">Version {0}</sys:String>
     <sys:String x:Key="Settings.About.License">MIT License · © 2026 Manuel Staggl</sys:String>

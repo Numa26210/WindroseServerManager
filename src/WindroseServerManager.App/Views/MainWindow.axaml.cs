@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using System.Runtime.InteropServices;
+using WindroseServerManager.Core.Services;
 
 namespace WindroseServerManager.App.Views;
 
@@ -74,13 +75,35 @@ public partial class MainWindow : Window
         }
     }
 
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+        var settings = App.Services?.GetService(typeof(IAppSettingsService)) as IAppSettingsService;
+        if (settings?.Current.CloseToTray == true)
+        {
+            e.Cancel = true;
+            Hide();
+        }
+    }
+
     private void OnMinimize(object? sender, RoutedEventArgs e)
         => WindowState = WindowState.Minimized;
 
     private void OnToggleMaximize(object? sender, RoutedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
-    private void OnClose(object? sender, RoutedEventArgs e) => Close();
+    private void OnClose(object? sender, RoutedEventArgs e)
+    {
+        var settings = App.Services?.GetService(typeof(IAppSettingsService)) as IAppSettingsService;
+        if (settings?.Current.CloseToTray == true)
+        {
+            Hide();
+        }
+        else
+        {
+            Close();
+        }
+    }
 
     private void OnDragZoneDoubleTapped(object? sender, TappedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
@@ -91,8 +114,6 @@ public partial class MainWindow : Window
             item.Dismiss();
     }
 
-    private const int ResizeBorderThickness = 6;
-
     private void OnWindowPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
@@ -102,42 +123,8 @@ public partial class MainWindow : Window
 
         if (e.Source is Control source && IsInteractive(source)) return;
 
-        // Edge/corner resize hit-testing (only in normal window state)
-        if (WindowState == WindowState.Normal)
-        {
-            var edge = HitTestResizeEdge(pos);
-            if (edge is not null)
-            {
-                BeginResizeDrag(edge.Value, e);
-                return;
-            }
-        }
-
         if (inTopBar)
             BeginMoveDrag(e);
-    }
-
-    private WindowEdge? HitTestResizeEdge(Point pos)
-    {
-        double x = pos.X, y = pos.Y;
-        double w = Bounds.Width, h = Bounds.Height;
-        int t = ResizeBorderThickness;
-
-        bool left   = x <= t;
-        bool right  = x >= w - t;
-        bool top    = y <= t;
-        bool bottom = y >= h - t;
-
-        if (top    && left)  return WindowEdge.NorthWest;
-        if (top    && right) return WindowEdge.NorthEast;
-        if (bottom && left)  return WindowEdge.SouthWest;
-        if (bottom && right) return WindowEdge.SouthEast;
-        if (top)    return WindowEdge.North;
-        if (bottom) return WindowEdge.South;
-        if (left)   return WindowEdge.West;
-        if (right)  return WindowEdge.East;
-
-        return null;
     }
 
     private static bool IsInteractive(Control c)

@@ -53,6 +53,7 @@ public partial class App : Application
                 // Autostart: App bootet in den Tray, kein sichtbares Fenster.
                 window.WindowState = Avalonia.Controls.WindowState.Minimized;
                 window.ShowInTaskbar = false;
+                window.Opened += (_, _) => window.Hide();
                 desktop.MainWindow = window;
             }
             else

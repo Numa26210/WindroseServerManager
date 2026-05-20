@@ -60,6 +60,7 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private bool _autoStartEnabled;
     [ObservableProperty] private bool _autoStartServerOnAppLaunch;
     [ObservableProperty] private int _autoStartDelaySeconds;
+    [ObservableProperty] private bool _closeToTray;
 
     // Discord Bot Integration
     [ObservableProperty] private bool _enableDiscordBot;
@@ -151,6 +152,7 @@ public partial class SettingsViewModel : ViewModelBase
         _autoStartServerOnAppLaunch = c.AutoStartServerOnAppLaunch;
         _autoStartDelaySeconds = c.AutoStartDelaySeconds;
         _suppressAutoStartWrite = false;
+        _closeToTray = c.CloseToTray;
 
         // WindrosePlus per-server toggle + version pin
         _suppressWpSettings = true;
@@ -467,6 +469,13 @@ public partial class SettingsViewModel : ViewModelBase
         {
             _toasts.Error(Loc.Format("Toast.AutoStartErrorFormat", ErrorMessageHelper.FriendlyMessage(ex)));
         }
+    }
+
+    partial void OnCloseToTrayChanged(bool value)
+    {
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.CloseToTray = value),
+            "CloseToTray");
     }
 
     partial void OnAutoRestartOnCrashChanged(bool value)

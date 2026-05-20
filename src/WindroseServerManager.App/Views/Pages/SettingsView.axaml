@@ -76,6 +76,18 @@
                 </StackPanel>
             </Border>
 
+            <!-- Close to tray -->
+            <Border Classes="card" Margin="0,0,0,12">
+                <StackPanel Spacing="8">
+                    <TextBlock Classes="section-header"
+                               Text="{DynamicResource Settings.CloseToTray.Title}" />
+                    <CheckBox Content="{DynamicResource Settings.CloseToTray.Label}"
+                              IsChecked="{Binding CloseToTray}" />
+                    <TextBlock Classes="caption" TextWrapping="Wrap"
+                               Text="{DynamicResource Settings.CloseToTray.Hint}" />
+                </StackPanel>
+            </Border>
+
             <!-- ════════════════════════════════════════════════════════════════
                  GRUPPE 2: SERVER  (Start-Verhalten, Steam, Firewall)
             ════════════════════════════════════════════════════════════════ -->
