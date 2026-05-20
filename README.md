@@ -6,15 +6,10 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.5.0**
+**Status: Stable · v1.6.0**
 
-![Version](https://img.shields.io/badge/version-1.5.0-success)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey)
-![.NET](https://img.shields.io/badge/.NET-9-512BD4)
-![Built on Windrose+](https://img.shields.io/badge/built%20on-Windrose%2B-orange)
-![Language](https://img.shields.io/badge/UI-English%20%7C%20German-blueviolet)
-![Tests](https://img.shields.io/badge/tests-215%20passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.6.0-success)
+![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
 
@@ -39,6 +34,32 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 - **ServerConfigService** — 25 tests (load/save/delete, atomic write, envelope preservation, edge cases)
 - **ServerEventLog** — 9 tests (append/read/clear, corruption resilience, 50-writer concurrency)
 - **RCON sanitization** — 8 tests
+
+---
+
+## What's new in v1.6.0
+
+### 🔧 Windrose+ Quality of Life
+- **Toggle on/off without reinstalling** — enable/disable Windrose+ per server without losing installed files
+- **Version pinning** — choose a specific Windrose+ release from a dropdown; "(Latest)" tracks the newest automatically
+- **QoL Editor** — 10 categorized multiplier sliders (XP, loot, stack size, weight, etc.) with save/reset and conflict detection
+- **Mod conflict scanner** — automatic detection of conflicting mods with per-card warnings and editor banner
+
+### 💾 Per-Server Folders
+- Configure backup and mods directories per server via Settings UI with folder picker
+- Falls back to global defaults when override is not set — fully backward compatible
+
+### 🖥️ System Tray Improvements
+- **Close to tray** — toggle in Settings to minimize to tray on window close instead of quitting
+- **Start minimized** — `--tray` / `--minimized` flag now fully hides the main window at startup
+- Tray "Quit" always fully exits, regardless of CloseToTray setting
+
+### ✅ Test Coverage
+- **235 passing tests** (up from 215 in v1.5.0, +20 new)
+- Per-server folder overrides — 4 tests
+- CloseToTray setting — 3 tests
+- Windrose+ toggle behavior — 3 tests
+- Version pinning — 1 test
 
 ---
 
@@ -216,12 +237,12 @@ No separate .NET install required — the self-contained build ships everything.
 ## Install
 
 ### Option A: Installer (recommended)
-1. Download `WindroseServerManager-Setup-1.5.0.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-Setup-1.6.0.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Run the installer, follow the prompts
 3. Launch from the Start Menu
 
 ### Option B: Portable ZIP
-1. Download `WindroseServerManager-1.5.0-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-1.6.0-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Extract anywhere
 3. Run `WindroseServerManager.exe`
 

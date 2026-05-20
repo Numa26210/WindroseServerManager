@@ -25,7 +25,7 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="{DynamicResource Tray.ToolTip}">
+            <TrayIcon Icon="/Assets/app.ico" ToolTipText="{DynamicResource Tray.ToolTip}">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Header="{DynamicResource Tray.Open}" Click="OnTrayShowMainWindow"/>
