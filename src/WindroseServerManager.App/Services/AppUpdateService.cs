@@ -11,7 +11,7 @@ namespace WindroseServerManager.App.Services;
 /// </summary>
 public sealed class AppUpdateService : IAppUpdateService
 {
-    private const string ApiUrl = "https://api.github.com/repos/ManuelStaggl/WindroseServerManager/releases/latest";
+    private const string ApiUrl = "https://api.github.com/repos/Numa26210/WindroseServerManager/releases/latest";
     private const string UserAgent = "WindroseServerManager-UpdateCheck";
 
     private readonly IHttpClientFactory _httpFactory;
