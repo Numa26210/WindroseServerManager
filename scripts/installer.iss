@@ -4,10 +4,10 @@
 
 #define MyAppName "Windrose Server Manager"
 #ifndef MyAppVersion
-  #define MyAppVersion "1.5.0"
+  #define MyAppVersion "1.6.0"
 #endif
-#define MyAppPublisher "Manuel Staggl"
-#define MyAppURL "https://github.com/ManuelStaggl/WindroseServerManager"
+#define MyAppPublisher "Manuel Staggl / Numa26210"
+#define MyAppURL "https://github.com/Numa26210/WindroseServerManager"
 #define MyAppExeName "WindroseServerManager.exe"
 
 [Setup]
