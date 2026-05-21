@@ -15,28 +15,6 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 ---
 
-## What's new in v1.5.0
-
-### 🔒 Security Fixes
-- **RCON command injection prevention** — kick/ban/broadcast parameters are now sanitized (strips `\n`, `\r`, `\0`) to prevent arbitrary command injection
-- **PowerShell script integrity** — SHA-256 verification of PS1 scripts before execution (install.ps1, BuildPak, dashboard)
-- **Strict digest enforcement** — installation now fails when the publisher SHA-256 digest is missing (was a warning, now a hard failure)
-- **Correct Windrose+ release URL** — updated to `github.com/HumanGenome/WindrosePlus`
-
-### ⚡ Performance Fixes
-- **Deadlock fix in RestartScheduler** — `CheckAutoRestartThresholds` converted to `async Task` with proper `await`
-- **HttpClient reuse** — single reusable `_loginClient` instance instead of `new HttpClient()` per request
-- **Async session management** — `_sessionLock.Wait()` replaced with `await _sessionLock.WaitAsync()`
-
-### ✅ Test Coverage
-- **215 passing tests** (up from 151 in v1.2.x, +64 new)
-- **BackupService** — 22 tests (create/restore/delete/retention, safety snapshot, partial cleanup)
-- **ServerConfigService** — 25 tests (load/save/delete, atomic write, envelope preservation, edge cases)
-- **ServerEventLog** — 9 tests (append/read/clear, corruption resilience, 50-writer concurrency)
-- **RCON sanitization** — 8 tests
-
----
-
 ## What's new in v1.6.0
 
 ### 🔧 Windrose+ Quality of Life
@@ -60,6 +38,28 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 - CloseToTray setting — 3 tests
 - Windrose+ toggle behavior — 3 tests
 - Version pinning — 1 test
+
+---
+
+## What's new in v1.5.0
+
+### 🔒 Security Fixes
+- **RCON command injection prevention** — kick/ban/broadcast parameters are now sanitized (strips `\n`, `\r`, `\0`) to prevent arbitrary command injection
+- **PowerShell script integrity** — SHA-256 verification of PS1 scripts before execution (install.ps1, BuildPak, dashboard)
+- **Strict digest enforcement** — installation now fails when the publisher SHA-256 digest is missing (was a warning, now a hard failure)
+- **Correct Windrose+ release URL** — updated to `github.com/HumanGenome/WindrosePlus`
+
+### ⚡ Performance Fixes
+- **Deadlock fix in RestartScheduler** — `CheckAutoRestartThresholds` converted to `async Task` with proper `await`
+- **HttpClient reuse** — single reusable `_loginClient` instance instead of `new HttpClient()` per request
+- **Async session management** — `_sessionLock.Wait()` replaced with `await _sessionLock.WaitAsync()`
+
+### ✅ Test Coverage
+- **215 passing tests** (up from 151 in v1.2.x, +64 new)
+- **BackupService** — 22 tests (create/restore/delete/retention, safety snapshot, partial cleanup)
+- **ServerConfigService** — 25 tests (load/save/delete, atomic write, envelope preservation, edge cases)
+- **ServerEventLog** — 9 tests (append/read/clear, corruption resilience, 50-writer concurrency)
+- **RCON sanitization** — 8 tests
 
 ---
 
