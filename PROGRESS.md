@@ -115,5 +115,6 @@
 ### v2.x — Future
 - [ ] Multi-server concurrent launch — [#4](https://github.com/ManuelStaggl/WindroseServerManager/issues/4)
 - [ ] WebUI for remote management — [#1](https://github.com/ManuelStaggl/WindroseServerManager/issues/1)
+- [ ] **Remote / LAN server support** — manage a Windrose server not hosted on the local Windows machine (e.g. Docker on Unraid, NAS via SMB share on LAN). Phase 1: UNC/network path support for logs, backups & config files. Phase 2: configurable Windrose+ API host instead of hardcoded `localhost` (player list, RCON, health check, live map) — [#1](https://github.com/ManuelStaggl/WindroseServerManager/issues/1)
 - [ ] Code-signing certificate for installer
 - [ ] Per-server port configuration in UI
