@@ -95,7 +95,7 @@ A fully integrated Discord bot running as a background service alongside the Ava
 
 ## Roadmap
 
-### v1.6.0 — Quality of Life *(coming next)*
+### v1.6.0 — Quality of Life ✅ *released*
 - 🔧 Windrose+ toggle on/off + version pinning (no more forced upgrades)
 - 💾 Per-server backup & mods folders
 - 🖥️ System tray: start minimized, close to tray, hide server console window
