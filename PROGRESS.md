@@ -1,12 +1,12 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.5.0**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.0**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.5.0)
+## ✅ Completed (v1.0.0 → v1.6.0)
 
 ### Core
 - [x] Avalonia Desktop UI (.NET 9, Semi.Avalonia)
@@ -79,40 +79,54 @@
 - [x] Async semaphore in session management (`WaitAsync` instead of `Wait`)
 - [x] Correct Windrose+ release URL (`github.com/HumanGenome/WindrosePlus`)
 
-### Test Coverage
-- [x] 215 passing tests (up from 151 in v1.2.x)
-- [x] BackupService — 22 tests (create/restore/delete/retention, safety snapshot)
-- [x] ServerConfigService — 25 tests (load/save/delete, atomic write, edge cases)
-- [x] ServerEventLog — 9 tests (append/read/clear, corruption resilience, 50-writer concurrency)
-- [x] RCON sanitization — 8 tests
+### Windrose+ QoL *(v1.6.0)*
+- [x] Windrose+ toggle on/off without reinstalling (preserves files on disable, prompts install on enable)
+- [x] Version pinning with ComboBox dropdown (paginated GitHub releases, "(Latest)" = auto)
 
-### Release Infrastructure
-- [x] Version in csproj
-- [x] `scripts/publish.ps1` — Self-contained single-file
-- [x] `scripts/build-release.ps1` — ZIP + optional Inno installer
-- [x] `scripts/installer.iss` — Inno Setup template
-- [x] README.md (public-release ready)
-- [x] LICENSE (MIT)
+### Per-Server Folders *(v1.6.0)*
+- [x] `BackupDirOverride` / `ModsDirOverride` on `ServerEntry`
+- [x] Folder picker + reset buttons in Settings UI
+- [x] Backward compatible (null override = global default)
+
+### System Tray *(v1.6.0)*
+- [x] Close-to-tray setting (window hides instead of quitting)
+- [x] Start fully minimized with `--tray` / `--minimized`
+- [x] Native close button intercepted via `OnClosing` override
+- [x] Tray icon uses app logo instead of Avalonia default
+
+### QoL Editor *(v1.6.0)*
+- [x] 10 categorized Windrose+ multiplier sliders (xp, loot, stack_size, weight, etc.)
+- [x] Save/Reset, conflict detection banner
+- [x] Mod conflict scanner (per-mod warnings + editor banner)
+
+### UI & Config *(v1.6.0)*
+- [x] Resizable main window (MinWidth=900, MinHeight=600)
+- [x] Configurable auto-start delay (0-60 seconds)
+- [x] Fork credit in About dialog and Settings
+- [x] App Update points to Numa26210 fork releases
+
+### Release Infrastructure *(v1.6.0)*
+- [x] Bump version to 1.6.0
+- [x] Installer updated (author, URL, version)
+- [x] GitHub release v1.6.0 published
+
+### Test Coverage *(v1.6.0)*
+- [x] **235 passing tests** (up from 215 in v1.5.0)
+- [x] Per-server folder overrides — 4 tests
+- [x] CloseToTray setting — 3 tests
+- [x] Windrose+ toggle behavior — 3 tests
+- [x] Version pinning — 1 test
 
 ---
 
 ## 🔄 Roadmap
 
-### v1.6.0 — Quality of Life *(next)*
-- [ ] Windrose+ toggle on/off without reinstalling — [#15](https://github.com/ManuelStaggl/WindroseServerManager/issues/15)
-- [ ] Windrose+ version pinning (choose version instead of always upgrading) — [#15](https://github.com/ManuelStaggl/WindroseServerManager/issues/15)
-- [ ] Switch startup bat (`StartServerForeground.bat` vs `StartWindrosePlusServer.bat`) — [#15](https://github.com/ManuelStaggl/WindroseServerManager/issues/15)
-- [ ] Per-server backup & mods folders — [#5](https://github.com/ManuelStaggl/WindroseServerManager/issues/5)
-- [ ] System tray: start minimized, close to tray, hide server console window — [#13](https://github.com/ManuelStaggl/WindroseServerManager/issues/13)
-- [ ] Translation fixes: remaining German strings in English UI — [#3](https://github.com/ManuelStaggl/WindroseServerManager/issues/3)
-- [ ] Mod conflict scanner + QoL settings page (Windrose+ multiplier sliders) — [PR #14](https://github.com/ManuelStaggl/WindroseServerManager/pull/14)
-
-### v1.7.0 — Automation & CLI
-- [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart — [#9](https://github.com/ManuelStaggl/WindroseServerManager/issues/9)
-- [ ] Native daily restart with auto-backup (no more `taskkill` workaround) — [#9](https://github.com/ManuelStaggl/WindroseServerManager/issues/9)
+### v1.7.0 — Automation & CLI *(next)*
+- [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
+- [ ] Native daily restart with auto-backup (no more `taskkill` workaround) — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
 
 ### v2.x — Future
-- [ ] Multi-server concurrent launch — [#4](https://github.com/ManuelStaggl/WindroseServerManager/issues/4)
-- [ ] WebUI for remote management — [#1](https://github.com/ManuelStaggl/WindroseServerManager/issues/1)
+- [ ] Multi-server concurrent launch — [#4](https://github.com/Numa26210/WindroseServerManager/issues/4)
+- [ ] WebUI for remote management — [#1](https://github.com/Numa26210/WindroseServerManager/issues/1)
 - [ ] Code-signing certificate for installer
 - [ ] Per-server port configuration in UI
