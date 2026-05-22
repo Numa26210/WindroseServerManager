@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -306,13 +307,37 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
         try
         {
             var json = File.ReadAllText(configPath);
-            return JsonSerializer.Deserialize<WindrosePlusConfig>(json,
+            var config = JsonSerializer.Deserialize<WindrosePlusConfig>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (config is null) return null;
+
+            MigrateMultiplierKeys(config);
+            return config;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "WindrosePlusApiService.ReadConfig failed for {Path}", configPath);
             return null;
+        }
+    }
+
+    private static void MigrateMultiplierKeys(WindrosePlusConfig config)
+    {
+        var multiplierKeys = WindrosePlusConfigSchema.All
+            .Where(s => s.JsonSection == "multipliers")
+            .Select(s => s.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (config.Multipliers.Count > 0 || multiplierKeys.Count == 0)
+            return;
+
+        foreach (var key in config.Server.Keys.ToList())
+        {
+            if (multiplierKeys.Contains(key))
+            {
+                config.Multipliers[key] = config.Server[key];
+                config.Server.Remove(key);
+            }
         }
     }
 

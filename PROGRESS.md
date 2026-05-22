@@ -1,12 +1,19 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.3**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.4**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.3)
+## ✅ Completed (v1.0.0 → v1.6.4)
+
+### PAK Rebuild Fix (v1.6.4)
+- [x] Fixed incorrect JSON structure: multipliers now written under server.multipliers key
+- [x] Auto-migration of existing flat-structure windrose_plus.json on load
+- [x] Inline "Rebuilding PAK…" status shown immediately after Save
+- [x] PAK rebuild deferred when server is running — triggers automatically on next start
+- [x] GitHub release v1.6.4 published
 
 ### Localization Fix (v1.6.3)
 - [x] Replaced hardcoded German strings in App Update section with localization keys (EN + DE)

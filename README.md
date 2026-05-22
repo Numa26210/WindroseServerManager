@@ -6,12 +6,24 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.3**
+**Status: Stable · v1.6.4**
 
-![Version](https://img.shields.io/badge/version-1.6.3-success)
+![Version](https://img.shields.io/badge/version-1.6.4-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.4
+
+### 🐛 Bug Fixes
+- **Fixed incorrect JSON structure** — multipliers are now correctly written under `server.multipliers` in `windrose_plus.json` instead of directly under the server root
+- **Auto-migration** — existing flat-structure files are silently restructured on next load
+
+### 🔧 PAK Rebuild UX
+- **Inline progress** — "Rebuilding PAK…" appears immediately after Save, no more UI freeze
+- **Server-running guard** — PAK rebuild is skipped when the server is running (avoids file locking), with a clear inline warning. Rebuild runs automatically on next server start
 
 ---
 
@@ -144,6 +156,11 @@ A fully integrated Discord bot running as a background service alongside the Ava
 ### v1.6.3 — Localization Fix ✅ *released*
 - 🌐 Fixed German strings in App Update section when Windows language is English (fixes [#5](https://github.com/Numa26210/WindroseServerManager/issues/5))
 - 🔧 All update-related services now use `Loc.Format()` for proper localization
+
+### v1.6.4 — PAK Rebuild Fix ✅ *released*
+- 🐛 Fixed multiplier JSON structure (nested under `server.multipliers`)
+- 🔧 Auto-migration of flat-structure config files on load
+- 🔄 Inline "Rebuilding PAK…" progress, deferred rebuild when server is running
 
 ### v1.7.0 — Automation & CLI *(next)*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart

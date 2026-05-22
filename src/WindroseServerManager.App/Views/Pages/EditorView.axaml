@@ -256,6 +256,10 @@
                         Content="{DynamicResource Editor.ResetAll}"
                         Command="{Binding ResetAllCommand}" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="{Binding RebuildStatusMessage}"
+                               Foreground="{DynamicResource BrandAmberBrush}"
+                               IsVisible="{Binding ShowRebuildStatus}"
+                               VerticalAlignment="Center" />
                     <TextBlock Text="{DynamicResource Editor.ValidationError}"
                                Foreground="{DynamicResource BrandErrorBrush}"
                                IsVisible="{Binding HasAnyError}"

@@ -30,6 +30,8 @@ public partial class EditorViewModel : ViewModelBase
     [ObservableProperty] private string? _errorMessage;
     [ObservableProperty] private bool _showRebuildWarning;
     [ObservableProperty] private string? _rebuildWarningMessage;
+    [ObservableProperty] private bool _showRebuildStatus;
+    [ObservableProperty] private string? _rebuildStatusMessage;
     [ObservableProperty] private ObservableCollection<ConflictResult> _activeConflicts = new();
 
     public bool IsWindrosePlusActive =>
@@ -188,24 +190,39 @@ public partial class EditorViewModel : ViewModelBase
             await _api.WriteConfigAsync(serverDir, cfg, CancellationToken.None);
             _toasts.Success(Loc.Get("Editor.Saved"));
 
-            var rebuilt = await _wplus.RunBuildPakAsync(serverDir, CancellationToken.None);
-            if (rebuilt)
+            if (_proc.Status == ServerStatus.Running)
             {
-                _toasts.Success(Loc.Get("Editor.Rebuilt"));
-
-                if (_proc.Status == ServerStatus.Running)
-                    _toasts.Warning(Loc.Get("Editor.RestartRequired"));
+                ShowRebuildWarning = true;
+                RebuildWarningMessage = Loc.Get("Editor.RebuildDeferred");
+                _toasts.Warning(Loc.Get("Editor.RebuildDeferred"));
             }
             else
             {
-                ShowRebuildWarning = true;
-                RebuildWarningMessage = Loc.Get("Editor.RebuildScriptNotFound");
-                _toasts.Warning(Loc.Get("Editor.RebuildWarning"));
+                ShowRebuildStatus = true;
+                RebuildStatusMessage = Loc.Get("Editor.Rebuilding");
+
+                var rebuilt = await _wplus.RunBuildPakAsync(serverDir, CancellationToken.None);
+
+                ShowRebuildStatus = false;
+                RebuildStatusMessage = null;
+
+                if (rebuilt)
+                {
+                    _toasts.Success(Loc.Get("Editor.Rebuilt"));
+                }
+                else
+                {
+                    ShowRebuildWarning = true;
+                    RebuildWarningMessage = Loc.Get("Editor.RebuildScriptNotFound");
+                    _toasts.Warning(Loc.Get("Editor.RebuildWarning"));
+                }
             }
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Editor save failed");
+            ShowRebuildStatus = false;
+            RebuildStatusMessage = null;
             _toasts.Error(Loc.Get("Editor.Error.Save"));
         }
     }

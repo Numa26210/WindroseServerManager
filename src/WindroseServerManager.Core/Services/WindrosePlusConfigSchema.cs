@@ -20,19 +20,19 @@ public static class WindrosePlusConfigSchema
         new("Server", "enabled",   "bool",   null, null,  false, "Editor.Schema.RconEnabled",  "rcon"),
         new("Server", "password",  "string", null, null,  "",    "Editor.Schema.RconPassword", "rcon"),
         // Economy
-        new("Economy", "xp",              "float", 0.1, 100, 1.0, "QoL.Xp"),
-        new("Economy", "loot",            "float", 0.1, 100, 1.0, "QoL.Loot"),
-        new("Economy", "craft_cost",      "float", 0.1, 100, 1.0, "QoL.CraftCost"),
+        new("Economy", "xp",              "float", 0.1, 100, 1.0, "QoL.Xp",              "multipliers"),
+        new("Economy", "loot",            "float", 0.1, 100, 1.0, "QoL.Loot",            "multipliers"),
+        new("Economy", "craft_cost",      "float", 0.1, 100, 1.0, "QoL.CraftCost",       "multipliers"),
         // Farming
-        new("Farming", "crop_speed",      "float", 0.1, 100, 1.0, "QoL.CropSpeed"),
-        new("Farming", "cooking_speed",   "float", 0.1, 100, 1.0, "QoL.CookingSpeed"),
-        new("Farming", "harvest_yield",   "float", 0.1, 100, 1.0, "QoL.HarvestYield"),
+        new("Farming", "crop_speed",      "float", 0.1, 100, 1.0, "QoL.CropSpeed",       "multipliers"),
+        new("Farming", "cooking_speed",   "float", 0.1, 100, 1.0, "QoL.CookingSpeed",    "multipliers"),
+        new("Farming", "harvest_yield",   "float", 0.1, 100, 1.0, "QoL.HarvestYield",    "multipliers"),
         // Inventory (danger zone — pak mod conflicts)
-        new("Inventory", "stack_size",     "float", 0.1, 100, 1.0, "QoL.StackSize"),
-        new("Inventory", "inventory_size", "float", 0.1, 100, 1.0, "QoL.InventorySize"),
-        new("Inventory", "weight",         "float", 0.1, 100, 1.0, "QoL.Weight"),
+        new("Inventory", "stack_size",     "float", 0.1, 100, 1.0, "QoL.StackSize",       "multipliers"),
+        new("Inventory", "inventory_size", "float", 0.1, 100, 1.0, "QoL.InventorySize",   "multipliers"),
+        new("Inventory", "weight",         "float", 0.1, 100, 1.0, "QoL.Weight",          "multipliers"),
         // Character
-        new("Character", "points_per_level","float", 0.1, 100, 1.0, "QoL.PointsPerLevel"),
+        new("Character", "points_per_level","float", 0.1, 100, 1.0, "QoL.PointsPerLevel", "multipliers"),
     };
 
     public static string? Validate(string key, string rawValue)
