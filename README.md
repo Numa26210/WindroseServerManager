@@ -6,12 +6,22 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.0**
+**Status: Stable · v1.6.1**
 
-![Version](https://img.shields.io/badge/version-1.6.0-success)
+![Version](https://img.shields.io/badge/version-1.6.1-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.1
+
+### 🌐 Localization Fix
+- **Session history subtext now respects Windows language setting** — fixes [#2](https://github.com/Numa26210/WindroseServerManager/issues/2)
+- All hardcoded French strings replaced with localizable key-based lookups (English + German)
+- New `ReasonKey`/`ReasonArg` system on `ServerEvent` model enables future translations
+- "Serveur" fallback renamed to "Server"
 
 ---
 
