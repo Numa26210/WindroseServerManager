@@ -28,6 +28,8 @@ public partial class EditorViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<CategoryGroup> _categories = new();
     [ObservableProperty] private bool _isLoading;
     [ObservableProperty] private string? _errorMessage;
+    [ObservableProperty] private bool _showRebuildWarning;
+    [ObservableProperty] private string? _rebuildWarningMessage;
     [ObservableProperty] private ObservableCollection<ConflictResult> _activeConflicts = new();
 
     public bool IsWindrosePlusActive =>
@@ -108,6 +110,7 @@ public partial class EditorViewModel : ViewModelBase
                 OnPropertyChanged(nameof(HasAnyError));
                 OnPropertyChanged(nameof(CanSave));
                 RefreshConflicts();
+                CheckBuildPakScript();
             });
         }
         catch (Exception ex)
@@ -185,14 +188,46 @@ public partial class EditorViewModel : ViewModelBase
             await _api.WriteConfigAsync(serverDir, cfg, CancellationToken.None);
             _toasts.Success(Loc.Get("Editor.Saved"));
 
-            if (_proc.Status == ServerStatus.Running)
-                _toasts.Warning(Loc.Get("Editor.RestartRequired"));
+            var rebuilt = await _wplus.RunBuildPakAsync(serverDir, CancellationToken.None);
+            if (rebuilt)
+            {
+                _toasts.Success(Loc.Get("Editor.Rebuilt"));
+
+                if (_proc.Status == ServerStatus.Running)
+                    _toasts.Warning(Loc.Get("Editor.RestartRequired"));
+            }
+            else
+            {
+                ShowRebuildWarning = true;
+                RebuildWarningMessage = Loc.Get("Editor.RebuildScriptNotFound");
+                _toasts.Warning(Loc.Get("Editor.RebuildWarning"));
+            }
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Editor save failed");
             _toasts.Error(Loc.Get("Editor.Error.Save"));
         }
+    }
+
+    private void CheckBuildPakScript()
+    {
+        var serverDir = _settings.ActiveServerDir;
+        if (string.IsNullOrWhiteSpace(serverDir))
+        {
+            ShowRebuildWarning = false;
+            return;
+        }
+
+        var serverDirFull = Path.GetFullPath(serverDir).TrimEnd('\\', '/');
+        var found = new[]
+        {
+            Path.Combine(serverDirFull, "tools", "WindrosePlus-BuildPak.ps1"),
+            Path.Combine(serverDirFull, "windrose_plus", "tools", "WindrosePlus-BuildPak.ps1"),
+        }.Any(File.Exists);
+
+        ShowRebuildWarning = !found;
+        RebuildWarningMessage = found ? null : Loc.Get("Editor.RebuildScriptNotFound");
     }
 
     private void RefreshConflicts()

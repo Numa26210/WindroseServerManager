@@ -6,12 +6,21 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.1**
+**Status: Stable · v1.6.2**
 
-![Version](https://img.shields.io/badge/version-1.6.1-success)
+![Version](https://img.shields.io/badge/version-1.6.2-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.2
+
+### 🔧 Instant PAK Rebuild on Config Save
+- **Config changes now apply immediately** — saving in the QoL Editor auto-triggers `WindrosePlus-BuildPak.ps1` instead of waiting for the next server restart
+- **Warning banner** appears if the rebuild script isn't found (e.g. Windrose+ not yet installed), so you're never left wondering why changes aren't applying
+- Clear EN/DE localized toast messages for rebuild success, script-not-found, and the banner
 
 ---
 
@@ -117,6 +126,11 @@ A fully integrated Discord bot running as a background service alongside the Ava
 ### v1.6.1 — Localization Fix ✅ *released*
 - 🌐 Session history subtext now respects Windows language setting (fixes [#2](https://github.com/Numa26210/WindroseServerManager/issues/2))
 - 🔧 All hardcoded French strings replaced with localizable key-based lookups
+
+### v1.6.2 — Instant PAK Rebuild ✅ *released*
+- 🔧 Auto-trigger PAK rebuild after saving W+ config — changes apply immediately
+- ⚠️ Warning banner when rebuild script not found
+- 🔄 New `RunBuildPakAsync` API on `IWindrosePlusService`
 
 ### v1.7.0 — Automation & CLI *(next)*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
@@ -258,12 +272,12 @@ No separate .NET install required — the self-contained build ships everything.
 ## Install
 
 ### Option A: Installer (recommended)
-1. Download `WindroseServerManager-Setup-1.6.0.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-Setup-1.6.2.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Run the installer, follow the prompts
 3. Launch from the Start Menu
 
 ### Option B: Portable ZIP
-1. Download `WindroseServerManager-1.6.0-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-1.6.2-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Extract anywhere
 3. Run `WindroseServerManager.exe`
 

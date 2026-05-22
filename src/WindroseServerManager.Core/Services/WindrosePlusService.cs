@@ -545,25 +545,27 @@ public sealed class WindrosePlusService : IWindrosePlusService
         // Retrofit servers installed before the tools-mirror fix existed.
         EnsureRootToolsMirror(serverDirFull);
 
-        // Try both install layouts (our C# installer puts tools\ at root; install.ps1 puts it under windrose_plus\tools\)
-        var buildPak = new[]
-        {
-            Path.Combine(serverDirFull, "tools", "WindrosePlus-BuildPak.ps1"),
-            Path.Combine(serverDirFull, "windrose_plus", "tools", "WindrosePlus-BuildPak.ps1"),
-        }.FirstOrDefault(File.Exists);
+        await RunBuildPakAsync(serverDirFull, ct).ConfigureAwait(false);
+    }
 
+    public async Task<bool> RunBuildPakAsync(string serverInstallDir, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(serverInstallDir)) return false;
+        var serverDirFull = Path.GetFullPath(serverInstallDir).TrimEnd('\\', '/');
+
+        var buildPak = FindBuildPakScript(serverDirFull);
         if (buildPak is null)
         {
-            _logger.LogWarning("WindrosePlus active but BuildPak script not found in {Dir} — skipping pre-launch build", serverDirFull);
-            return;
+            _logger.LogWarning("BuildPak script not found in {Dir} — skipping PAK rebuild", serverDirFull);
+            return false;
         }
 
-        _logger.LogInformation("Running WindrosePlus pre-launch BuildPak at {Script}", buildPak);
+        _logger.LogInformation("Running WindrosePlus BuildPak at {Script}", buildPak);
 
         if (!await VerifyScriptIntegrityAsync(buildPak, serverDirFull, ct).ConfigureAwait(false))
         {
-            _logger.LogWarning("BuildPak script integrity check failed — skipping pre-launch build");
-            return;
+            _logger.LogWarning("BuildPak script integrity check failed — skipping PAK rebuild");
+            return false;
         }
 
         var psi = new System.Diagnostics.ProcessStartInfo
@@ -588,7 +590,18 @@ public sealed class WindrosePlusService : IWindrosePlusService
         if (!string.IsNullOrWhiteSpace(stderr))
             _logger.LogWarning("BuildPak stderr: {Err}", stderr.Trim());
         if (proc.ExitCode != 0)
-            _logger.LogWarning("BuildPak exited with code {Code} — server will launch anyway", proc.ExitCode);
+            _logger.LogWarning("BuildPak exited with code {Code}", proc.ExitCode);
+
+        return true;
+    }
+
+    private static string? FindBuildPakScript(string serverDirFull)
+    {
+        return new[]
+        {
+            Path.Combine(serverDirFull, "tools", "WindrosePlus-BuildPak.ps1"),
+            Path.Combine(serverDirFull, "windrose_plus", "tools", "WindrosePlus-BuildPak.ps1"),
+        }.FirstOrDefault(File.Exists);
     }
 
     /// <summary>Creates (or overwrites) StartWindrosePlusServer.bat in the server root.

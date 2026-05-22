@@ -1,12 +1,18 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.1**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.2**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.1)
+## ✅ Completed (v1.0.0 → v1.6.2)
+
+### v1.6.2 — PAK Rebuild on Save *(current)*
+- [x] Auto-trigger `WindrosePlus-BuildPak.ps1` immediately after saving config in QoL Editor (no more pre-launch-only rebuild)
+- [x] Warning banner in Editor when rebuild script is not found (e.g. Windrose+ not yet installed)
+- [x] New `RunBuildPakAsync` method on `IWindrosePlusService` for external invocations
+- [x] EN/DE localized messages for rebuild success, rebuild warning, and script-not-found
 
 ### Core
 - [x] Avalonia Desktop UI (.NET 9, Semi.Avalonia)

@@ -756,6 +756,9 @@
     <sys:String x:Key="Editor.ValidationError">Ein oder mehrere Werte sind ungültig.</sys:String>
     <sys:String x:Key="Editor.Error.Load">Konfiguration konnte nicht geladen werden.</sys:String>
     <sys:String x:Key="Editor.Error.Save">Konfiguration konnte nicht gespeichert werden.</sys:String>
+    <sys:String x:Key="Editor.Rebuilt">PAK erfolgreich neu erstellt — Änderungen sind jetzt aktiv.</sys:String>
+    <sys:String x:Key="Editor.RebuildWarning">PAK konnte nicht neu erstellt werden — Änderungen werden beim nächsten Serverstart übernommen.</sys:String>
+    <sys:String x:Key="Editor.RebuildScriptNotFound">PAK-Erstellungsskript nicht gefunden. Installieren Sie Windrose+ neu, um Konfigurationsänderungen sofort zu übernehmen.</sys:String>
     <sys:String x:Key="Editor.Category.Server">Server-Einstellungen</sys:String>
     <sys:String x:Key="Editor.Category.Economy">Wirtschaft</sys:String>
     <sys:String x:Key="Editor.Category.Farming">Landwirtschaft</sys:String>

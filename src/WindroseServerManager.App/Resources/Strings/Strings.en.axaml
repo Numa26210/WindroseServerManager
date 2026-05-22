@@ -756,6 +756,9 @@
     <sys:String x:Key="Editor.ValidationError">One or more values are invalid.</sys:String>
     <sys:String x:Key="Editor.Error.Load">Could not load configuration.</sys:String>
     <sys:String x:Key="Editor.Error.Save">Could not save configuration.</sys:String>
+    <sys:String x:Key="Editor.Rebuilt">PAK rebuilt successfully — changes are now live.</sys:String>
+    <sys:String x:Key="Editor.RebuildWarning">Could not rebuild PAK — changes will apply on next server restart.</sys:String>
+    <sys:String x:Key="Editor.RebuildScriptNotFound">PAK rebuild script not found. Install or reinstall Windrose+ to apply config changes immediately.</sys:String>
     <sys:String x:Key="Editor.Category.Server">Server Settings</sys:String>
     <sys:String x:Key="Editor.Category.Economy">Economy</sys:String>
     <sys:String x:Key="Editor.Category.Farming">Farming</sys:String>

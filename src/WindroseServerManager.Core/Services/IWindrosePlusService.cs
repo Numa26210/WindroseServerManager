@@ -22,6 +22,9 @@ public interface IWindrosePlusService : IDisposable
     /// <summary>Run WindrosePlus-BuildPak.ps1 before server launch if WindrosePlus is active. No-op if not active or script not found.</summary>
     Task RunPreLaunchAsync(string serverInstallDir, CancellationToken ct = default);
 
+    /// <summary>Run WindrosePlus-BuildPak.ps1 immediately to apply config changes. Returns true if the script ran, false if no script was found.</summary>
+    Task<bool> RunBuildPakAsync(string serverInstallDir, CancellationToken ct = default);
+
     /// <summary>Read .wplus-version marker from server dir. Returns null if missing or malformed.</summary>
     WindrosePlusVersionMarker? ReadVersionMarker(string serverInstallDir);
 
