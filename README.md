@@ -104,9 +104,20 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - ↔️ Resizable window (better experience on RDP and multi-monitor setups)
 - ⏱️ Configurable auto-start delay (seconds) — lets secondary drives mount before pre-launch backup + server start
 
-### v1.7.0 — Automation & CLI
+### v1.6.1 — Localization Fix ✅ *released*
+- 🌐 Session history subtext now respects Windows language setting (fixes [#2](https://github.com/Numa26210/WindroseServerManager/issues/2))
+- 🔧 All hardcoded French strings replaced with localizable key-based lookups
+
+### v1.7.0 — Automation & CLI *(next)*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
 - 🔄 Native daily restart with auto-backup (no more `taskkill` workaround)
+- 🔔 Discord notification events (player join/leave, crash alerts)
+- 🌍 Remote Windrose+ host support (IP/port/password instead of localhost)
+
+### v1.8.0 — Collaboration Merge
+- 🛡️ Merge PR #17 from DazClimax: watchdog service, UI skin selection, backup improvements
+- 🤝 Merge remaining community contributions
+- 🔄 Cross-fork CI: auto-build + test all incoming PRs
 
 ### v2.x — Future
 - 🖥️ Multi-server concurrent launch
@@ -338,7 +349,7 @@ WindroseServerManager/
 
 ## Tests
 
-Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit) — **215 passing**:
+Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit) — **235 passing**:
 
 ```powershell
 dotnet test

@@ -190,7 +190,7 @@ public sealed class RestartScheduler : BackgroundService
             RestartTrigger.MaxUptime => ServerEventType.AutoRestartMaxUptime,
             _ => ServerEventType.ScheduledRestart,
         };
-        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
+        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
         await _events.AppendAsync(new ServerEvent(DateTime.UtcNow, eventType, reason, ServerName: serverName), ct).ConfigureAwait(false);
 
         try { await _server.StopAsync(ct).ConfigureAwait(false); }

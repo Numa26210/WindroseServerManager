@@ -1,12 +1,12 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.0**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.1**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.0)
+## ✅ Completed (v1.0.0 → v1.6.1)
 
 ### Core
 - [x] Avalonia Desktop UI (.NET 9, Semi.Avalonia)
@@ -114,13 +114,27 @@
 - [x] **235 passing tests** (up from 215 in v1.5.0)
 - [x] Per-server folder overrides, CloseToTray, W+ toggle, version pinning — 11 new tests
 
+### Localization Fix *(v1.6.1)*
+- [x] Added `ReasonKey`/`ReasonArg` to `ServerEvent` for proper localization
+- [x] Replaced hardcoded French strings with key-based lookups (EN + DE)
+- [x] `ServerEventToDetailConverter` now resolves through `Loc.Format(key, arg)`
+- [x] "Serveur" fallback → "Server"
+- [x] GitHub release v1.6.1 published
+
 ---
 
 ## 🔄 Roadmap
 
 ### v1.7.0 — Automation & CLI *(next)*
-- [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
-- [ ] Native daily restart with auto-backup (no more `taskkill` workaround)
+- [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
+- [ ] Native daily restart with auto-backup (no more `taskkill` workaround) — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
+- [ ] Discord notification events (player join/leave, server crash alerts)
+- [ ] Remote Windrose+ host support (IP/port/password instead of localhost) — [#1](https://github.com/Numa26210/WindroseServerManager/issues/1)
+
+### v1.8.0 — Collaboration Merge
+- [ ] Merge PR #17 from DazClimax: watchdog service, UI skin selection (dark theme variant), backup on scheduled restart improvements
+- [ ] Merge remaining shepherdcreations contributions (mod conflict scanner already integrated in v1.6.0)
+- [ ] Cross-fork CI: auto-build + test all incoming PRs
 
 ### v2.x — Future
 - [ ] Multi-server concurrent launch

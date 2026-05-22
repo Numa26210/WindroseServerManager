@@ -483,7 +483,12 @@ public sealed class ServerEventToDetailConverter : IValueConverter
     {
         if (value is not ServerEvent e) return string.Empty;
         var parts = new List<string>();
-        if (!string.IsNullOrWhiteSpace(e.Reason)) parts.Add(e.Reason);
+        var reasonText = e.ReasonKey is not null
+            ? e.ReasonArg is not null
+                ? Loc.Format(e.ReasonKey, e.ReasonArg)
+                : Loc.Get(e.ReasonKey)
+            : e.Reason;
+        if (!string.IsNullOrWhiteSpace(reasonText)) parts.Add(reasonText);
         if (e.SessionDuration is { } d && d.TotalSeconds > 0)
         {
             var durStr = d.TotalHours >= 1

@@ -511,6 +511,12 @@
     <sys:String x:Key="Event.BackupDeleted">Backup Deleted</sys:String>
     <sys:String x:Key="Event.SessionDurationHm">{0}h {1}m</sys:String>
     <sys:String x:Key="Event.SessionDurationMs">{0}m {1}s</sys:String>
+    <sys:String x:Key="Event.Reason.StartedApp">Started via application (PID={0})</sys:String>
+    <sys:String x:Key="Event.Reason.BackupCreated">Backup created: {0}</sys:String>
+    <sys:String x:Key="Event.Reason.BackupDeleted">Backup deleted: {0}</sys:String>
+    <sys:String x:Key="Event.Reason.BackupRestored">Backup restored: {0}</sys:String>
+    <sys:String x:Key="Event.Reason.Crashed">Crash (ExitCode={0})</sys:String>
+    <sys:String x:Key="Event.Reason.Stopped">Stop (ExitCode={0})</sys:String>
 
     <!-- Mods -->
     <sys:String x:Key="Nav.Mods">Mods</sys:String>

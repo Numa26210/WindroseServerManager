@@ -25,4 +25,6 @@ public sealed record ServerEvent(
     string Reason,
     int? ExitCode = null,
     TimeSpan? SessionDuration = null,
-    string? ServerName = null);
+    string? ServerName = null,
+    string? ReasonKey = null,
+    string? ReasonArg = null);
