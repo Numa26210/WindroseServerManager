@@ -256,8 +256,8 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
 
             _logger.LogInformation("Started Windrose server pid={Pid} exe={Exe}", ProcessId, exe);
 
-            var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
-            _ = _events.AppendAsync(new ServerEvent(DateTime.UtcNow, ServerEventType.Started, $"Démarrage via l'application (PID={ProcessId})", ServerName: serverName));
+            var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
+            _ = _events.AppendAsync(new ServerEvent(DateTime.UtcNow, ServerEventType.Started, $"Started via application (PID={ProcessId})", ServerName: serverName, ReasonKey: "Event.Reason.StartedApp", ReasonArg: ProcessId.ToString()));
 
             // Start WindrosePlus dashboard server after game server starts (fire-and-forget, 2s delay)
             if (wpEnabled)
@@ -498,11 +498,12 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         var sessionDuration = startedAt is null ? (TimeSpan?)null : DateTime.UtcNow - startedAt.Value;
         var crashed = previous != ServerStatus.Stopping && code != 0;
         var evtType = crashed ? ServerEventType.Crashed : ServerEventType.Stopped;
+        var exitCodeStr = code?.ToString() ?? "?";
         var reason = crashed
-            ? $"Crash (ExitCode={code?.ToString() ?? "?"})"
-            : $"Stop (ExitCode={code?.ToString() ?? "?"})";
-        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
-        _ = _events.AppendAsync(new ServerEvent(DateTime.UtcNow, evtType, reason, code, sessionDuration, ServerName: serverName));
+            ? $"Crash (ExitCode={exitCodeStr})"
+            : $"Stop (ExitCode={exitCodeStr})";
+        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
+        _ = _events.AppendAsync(new ServerEvent(DateTime.UtcNow, evtType, reason, code, sessionDuration, ServerName: serverName, ReasonKey: crashed ? "Event.Reason.Crashed" : "Event.Reason.Stopped", ReasonArg: exitCodeStr));
 
         // Auto-restart on crash if enabled and we weren't the one who stopped it
         if (previous != ServerStatus.Stopping && _settings.Current.AutoRestartOnCrash)

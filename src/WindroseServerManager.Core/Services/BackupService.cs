@@ -61,7 +61,7 @@ public sealed class BackupService : IBackupService
         }
 
         var backupDir = GetBackupDir();
-        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
+        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
 
         var ts = DateTime.Now.ToString("yyyyMMdd-HHmmss");
         var fileName = $"{(isAutomatic ? AutoPrefix : ManualPrefix)}{ts}.zip";
@@ -87,8 +87,10 @@ public sealed class BackupService : IBackupService
         _ = _eventLog.AppendAsync(new ServerEvent(
             DateTime.UtcNow, 
             isAutomatic ? ServerEventType.BackupAutomatic : ServerEventType.BackupManual, 
-            $"Sauvegarde créée : {fileName}", 
-            ServerName: serverName));
+            $"Backup created: {fileName}", 
+            ServerName: serverName,
+            ReasonKey: "Event.Reason.BackupCreated",
+            ReasonArg: fileName));
 
         return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, isAutomatic);
     }
@@ -156,12 +158,14 @@ public sealed class BackupService : IBackupService
             return;
         }
         File.Delete(path);
-        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
+        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
         _ = _eventLog.AppendAsync(new ServerEvent(
             DateTime.UtcNow, 
             ServerEventType.BackupDeleted, 
-            $"Sauvegarde supprimée : {fileName}", 
-            ServerName: serverName));
+            $"Backup deleted: {fileName}", 
+            ServerName: serverName,
+            ReasonKey: "Event.Reason.BackupDeleted",
+            ReasonArg: fileName));
 
         _logger.LogInformation("Deleted backup {Path}", path);
     }
@@ -204,12 +208,14 @@ public sealed class BackupService : IBackupService
             ZipFile.ExtractToDirectory(backupPath, extractParent, overwriteFiles: true);
         }, ct).ConfigureAwait(false);
 
-        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Serveur";
+        var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
         _ = _eventLog.AppendAsync(new ServerEvent(
             DateTime.UtcNow, 
             ServerEventType.BackupRestored, 
-            $"Restauration effectuée : {fileName}", 
-            ServerName: serverName));
+            $"Backup restored: {fileName}", 
+            ServerName: serverName,
+            ReasonKey: "Event.Reason.BackupRestored",
+            ReasonArg: fileName));
     }
 
     public int ApplyRetention()
