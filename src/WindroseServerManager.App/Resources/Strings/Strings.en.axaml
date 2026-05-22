@@ -381,6 +381,25 @@
     <sys:String x:Key="Update.Banner.Subtitle">A newer version of Windrose Server Manager is available.</sys:String>
     <sys:String x:Key="Update.Banner.AvailableFormat">Update available: v{0}</sys:String>
 
+    <!-- App Update Status Messages -->
+    <sys:String x:Key="AppUpdate.NoReleasePublished">No release published yet.</sys:String>
+    <sys:String x:Key="AppUpdate.NoStableVersion">No stable version available.</sys:String>
+    <sys:String x:Key="AppUpdate.ReleaseUnreadable">Could not read release version.</sys:String>
+    <sys:String x:Key="AppUpdate.UpToDateFormat">You are using the latest version (v{0}).</sys:String>
+    <sys:String x:Key="AppUpdate.CheckUnreachable">Update check unreachable.</sys:String>
+
+    <!-- Server Update Status Messages -->
+    <sys:String x:Key="ServerUpdate.CheckUnavailable">Update check unavailable.</sys:String>
+    <sys:String x:Key="ServerUpdate.NotInstalledFormat">Server not installed. Current build ID: {0}</sys:String>
+    <sys:String x:Key="ServerUpdate.UpdateAvailableFormat">Update available: {0} → {1}</sys:String>
+    <sys:String x:Key="ServerUpdate.UpToDateFormat">Server is up to date (build {0}).</sys:String>
+
+    <!-- Windrose+ Update Status Messages -->
+    <sys:String x:Key="WplusUpdate.NoOptInServers">No servers with active Windrose+.</sys:String>
+    <sys:String x:Key="WplusUpdate.CheckUnreachable">Update check unreachable.</sys:String>
+    <sys:String x:Key="WplusUpdate.UpdateAvailableFormat">Windrose+ {0} available.</sys:String>
+    <sys:String x:Key="WplusUpdate.UpToDateFormat">Windrose+ is up to date ({0}).</sys:String>
+
     <!-- Toasts / Feedback -->
     <sys:String x:Key="Toast.SettingsSaved">Settings saved.</sys:String>
     <sys:String x:Key="Toast.AutomationSaved">Automation saved.</sys:String>

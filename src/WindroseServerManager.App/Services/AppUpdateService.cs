@@ -50,7 +50,7 @@ public sealed class AppUpdateService : IAppUpdateService
             {
                 _logger.LogInformation("GitHub releases endpoint returned 404 (noch kein Release veröffentlicht)");
                 return new AppUpdateResult(false, current.ToString(), null, null, null,
-                    "Noch kein Release veröffentlicht.");
+                    Loc.Get("AppUpdate.NoReleasePublished"));
             }
             resp.EnsureSuccessStatusCode();
 
@@ -67,14 +67,14 @@ public sealed class AppUpdateService : IAppUpdateService
             {
                 _logger.LogDebug("Skipping draft/prerelease {Tag}", tag);
                 return new AppUpdateResult(false, current.ToString(), null, null, null,
-                    "Keine stabile Version verfügbar.");
+                    Loc.Get("AppUpdate.NoStableVersion"));
             }
 
             if (string.IsNullOrWhiteSpace(tag) || !TryParseVersion(tag, out var latest))
             {
                 _logger.LogWarning("Konnte Tag nicht parsen: {Tag}", tag);
                 return new AppUpdateResult(false, current.ToString(), null, null, null,
-                    "Release-Version konnte nicht gelesen werden.");
+                    Loc.Get("AppUpdate.ReleaseUnreadable"));
             }
 
             var latestStr = NormalizeVersion(latest);
@@ -82,8 +82,8 @@ public sealed class AppUpdateService : IAppUpdateService
             var hasUpdate = latest > current;
 
             var msg = hasUpdate
-                ? $"Update verfügbar: v{latestStr}"
-                : $"Du verwendest die aktuelle Version (v{current}).";
+                ? Loc.Format("Update.Banner.AvailableFormat", latestStr)
+                : Loc.Format("AppUpdate.UpToDateFormat", current);
 
             return new AppUpdateResult(hasUpdate, current.ToString(), latestStr, htmlUrl, downloadUrl, msg);
         }
@@ -95,7 +95,7 @@ public sealed class AppUpdateService : IAppUpdateService
         {
             _logger.LogWarning(ex, "App-Update-Check fehlgeschlagen");
             return new AppUpdateResult(false, current.ToString(), null, null, null,
-                "Update-Check nicht erreichbar.");
+                Loc.Get("AppUpdate.CheckUnreachable"));
         }
     }
 

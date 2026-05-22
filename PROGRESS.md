@@ -1,14 +1,18 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.2**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.3**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.2)
+## ✅ Completed (v1.0.0 → v1.6.3)
 
-### v1.6.2 — PAK Rebuild on Save *(current)*
+### Localization Fix (v1.6.3)
+- [x] Replaced hardcoded German strings in App Update section with localization keys (EN + DE)
+- [x] GitHub release v1.6.3 published
+
+### v1.6.2 — PAK Rebuild on Save
 - [x] Auto-trigger `WindrosePlus-BuildPak.ps1` immediately after saving config in QoL Editor (no more pre-launch-only rebuild)
 - [x] Warning banner in Editor when rebuild script is not found (e.g. Windrose+ not yet installed)
 - [x] New `RunBuildPakAsync` method on `IWindrosePlusService` for external invocations

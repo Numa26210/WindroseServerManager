@@ -46,19 +46,19 @@ public sealed partial class UpdateCheckService : IUpdateCheckService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Update check request failed");
-            return new UpdateCheckResult(false, installed, null, "Update-Check nicht verfügbar");
+            return new UpdateCheckResult(false, installed, null, Loc.Get("ServerUpdate.CheckUnavailable"));
         }
 
         if (string.IsNullOrWhiteSpace(latest))
-            return new UpdateCheckResult(false, installed, null, "Update-Check nicht verfügbar");
+            return new UpdateCheckResult(false, installed, null, Loc.Get("ServerUpdate.CheckUnavailable"));
 
         if (string.IsNullOrWhiteSpace(installed))
-            return new UpdateCheckResult(true, null, latest, $"Server nicht installiert. Aktuelle Build-ID: {latest}");
+            return new UpdateCheckResult(true, null, latest, Loc.Format("ServerUpdate.NotInstalledFormat", latest));
 
         var hasUpdate = !string.Equals(installed, latest, StringComparison.Ordinal);
         var msg = hasUpdate
-            ? $"Update verfügbar: {installed} → {latest}"
-            : $"Server ist aktuell (Build {installed}).";
+            ? Loc.Format("ServerUpdate.UpdateAvailableFormat", installed, latest)
+            : Loc.Format("ServerUpdate.UpToDateFormat", installed);
         return new UpdateCheckResult(hasUpdate, installed, latest, msg);
     }
 

@@ -55,7 +55,7 @@ public sealed class WindrosePlusUpdateService : IWindrosePlusUpdateService
                 LatestTag: null,
                 ReleaseUrl: ReleaseUrl,
                 Servers: Array.Empty<WindrosePlusServerStatus>(),
-                Message: "Keine Server mit aktivem WindrosePlus.",
+                Message: Loc.Get("WplusUpdate.NoOptInServers"),
                 Succeeded: true,
                 CheckedUtc: nowUtc);
         }
@@ -75,7 +75,7 @@ public sealed class WindrosePlusUpdateService : IWindrosePlusUpdateService
                 LatestTag: null,
                 ReleaseUrl: ReleaseUrl,
                 Servers: Array.Empty<WindrosePlusServerStatus>(),
-                Message: "Update-Check nicht erreichbar.",
+                Message: Loc.Get("WplusUpdate.CheckUnreachable"),
                 Succeeded: false,
                 CheckedUtc: nowUtc);
         }
@@ -93,8 +93,8 @@ public sealed class WindrosePlusUpdateService : IWindrosePlusUpdateService
 
         var anyUpdate = statuses.Any(x => x.HasUpdate);
         var msg = anyUpdate
-            ? $"WindrosePlus {latestTag} verfügbar."
-            : $"WindrosePlus ist aktuell ({latestTag}).";
+            ? Loc.Format("WplusUpdate.UpdateAvailableFormat", latestTag)
+            : Loc.Format("WplusUpdate.UpToDateFormat", latestTag);
 
         return new WindrosePlusUpdateResult(
             AnyUpdate: anyUpdate,

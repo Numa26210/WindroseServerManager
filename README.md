@@ -6,12 +6,21 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.2**
+**Status: Stable · v1.6.3**
 
-![Version](https://img.shields.io/badge/version-1.6.2-success)
+![Version](https://img.shields.io/badge/version-1.6.3-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.3
+
+### 🌐 Localization Fix
+- **Fixed German strings appearing in the App Update section** when Windows language is set to English — fixes [#5](https://github.com/Numa26210/WindroseServerManager/issues/5)
+- All update-related UI (App Update checker, server Update checker, Windrose+ Update checker) now properly routes through the localization system
+- Fully localized in both English and German
 
 ---
 
@@ -131,6 +140,10 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🔧 Auto-trigger PAK rebuild after saving W+ config — changes apply immediately
 - ⚠️ Warning banner when rebuild script not found
 - 🔄 New `RunBuildPakAsync` API on `IWindrosePlusService`
+
+### v1.6.3 — Localization Fix ✅ *released*
+- 🌐 Fixed German strings in App Update section when Windows language is English (fixes [#5](https://github.com/Numa26210/WindroseServerManager/issues/5))
+- 🔧 All update-related services now use `Loc.Format()` for proper localization
 
 ### v1.7.0 — Automation & CLI *(next)*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
