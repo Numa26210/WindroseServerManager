@@ -6,12 +6,19 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.5**
+**Status: Stable · v1.6.6**
 
-![Version](https://img.shields.io/badge/version-1.6.5-success)
+![Version](https://img.shields.io/badge/version-1.6.6-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.6
+
+### 🪟 Window Resize Fix
+- **Restored window resize on all 8 edges and corners** — dragging any edge or corner now triggers `BeginResizeDrag` with the correct cursor. Previously, `WindowDecorations="None"` disabled all native resize. The custom overlay uses 8px hit-test zones with correct Avalonia `StandardCursorType` cursors.
 
 ---
 
@@ -168,6 +175,10 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🐛 Fixed multiplier JSON structure (nested under `server.multipliers`)
 - 🔧 Auto-migration of flat-structure config files on load
 - 🔄 Inline "Rebuilding PAK…" progress, deferred rebuild when server is running
+
+### v1.6.6 — Window Resize Fix ✅ *released*
+- 🪟 Restored window resize on all 8 edges/corners (custom chrome fix)
+- 🖱️ Correct resize cursors on edge/corner hover
 
 ### v1.6.5 — Backup Reliability ✅ *released*
 - 🐛 Fixed auto-backup failures on scheduled restart (file lock on R5.log)

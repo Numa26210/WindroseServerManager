@@ -1,12 +1,18 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.5**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.6**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.5)
+## ✅ Completed (v1.0.0 → v1.6.6)
+
+### v1.6.6 — Window Resize Fix
+- [x] Restored window resize on all 8 edges/corners (broken by custom WindowDecorations=None chrome)
+- [x] Correct resize cursors on hover (SizeNS, SizeWE, SizeNESW, SizeNWSE)
+- [x] MinWidth=900 / MinHeight=600 still enforced
+- [x] GitHub release v1.6.6 published
 
 ### v1.6.5 — Backup Reliability
 - [x] Post-stop grace delay before backup (configurable 0–30s, default 3s)
