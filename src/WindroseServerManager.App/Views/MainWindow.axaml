@@ -65,6 +65,7 @@
         </Style>
     </Window.Styles>
 
+  <Grid>
     <Border Name="RootBorder"
             CornerRadius="10"
             Background="{DynamicResource BrandNavyMicaBrush}"
@@ -308,4 +309,35 @@
         </ItemsControl>
     </Panel>
     </Border>
+
+    <Grid Name="ResizeOverlay" IsHitTestVisible="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="8" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="8" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="8" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="8" />
+      </Grid.RowDefinitions>
+
+      <Rectangle Grid.Row="0" Grid.Column="0" Cursor="SizeNWSE" Fill="Transparent"
+                 PointerPressed="OnResizeNorthWest" />
+      <Rectangle Grid.Row="0" Grid.Column="1" Cursor="SizeNS" Fill="Transparent"
+                 PointerPressed="OnResizeNorth" />
+      <Rectangle Grid.Row="0" Grid.Column="2" Cursor="SizeNESW" Fill="Transparent"
+                 PointerPressed="OnResizeNorthEast" />
+      <Rectangle Grid.Row="1" Grid.Column="0" Cursor="SizeWE" Fill="Transparent"
+                 PointerPressed="OnResizeWest" />
+      <Rectangle Grid.Row="1" Grid.Column="2" Cursor="SizeWE" Fill="Transparent"
+                 PointerPressed="OnResizeEast" />
+      <Rectangle Grid.Row="2" Grid.Column="0" Cursor="SizeNESW" Fill="Transparent"
+                 PointerPressed="OnResizeSouthWest" />
+      <Rectangle Grid.Row="2" Grid.Column="1" Cursor="SizeNS" Fill="Transparent"
+                 PointerPressed="OnResizeSouth" />
+      <Rectangle Grid.Row="2" Grid.Column="2" Cursor="SizeNWSE" Fill="Transparent"
+                 PointerPressed="OnResizeSouthEast" />
+    </Grid>
+  </Grid>
 </Window>

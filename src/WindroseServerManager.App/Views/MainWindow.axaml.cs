@@ -108,6 +108,23 @@ public partial class MainWindow : Window
     private void OnDragZoneDoubleTapped(object? sender, TappedEventArgs e)
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
+    private void OnResizeNorth(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.North, e);
+    private void OnResizeSouth(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.South, e);
+    private void OnResizeWest(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.West, e);
+    private void OnResizeEast(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.East, e);
+    private void OnResizeNorthWest(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.NorthWest, e);
+    private void OnResizeNorthEast(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.NorthEast, e);
+    private void OnResizeSouthWest(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.SouthWest, e);
+    private void OnResizeSouthEast(object? sender, PointerPressedEventArgs e)
+        => BeginResizeDrag(WindowEdge.SouthEast, e);
+
     private void OnToastTapped(object? sender, TappedEventArgs e)
     {
         if (sender is Control { DataContext: Services.ToastItem item })
@@ -123,7 +140,7 @@ public partial class MainWindow : Window
 
         if (e.Source is Control source && IsInteractive(source)) return;
 
-        if (inTopBar)
+        if (pos.Y > 8 && inTopBar)
             BeginMoveDrag(e);
     }
 
