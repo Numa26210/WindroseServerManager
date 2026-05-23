@@ -214,6 +214,8 @@
     <sys:String x:Key="ServerControl.UptimeOver">When uptime over</sys:String>
     <sys:String x:Key="ServerControl.Hours">hours</sys:String>
     <sys:String x:Key="ServerControl.BackupOnRestart">Create backup on restart</sys:String>
+    <sys:String x:Key="ServerControl.BackupGraceDelay">Post-stop grace delay</sys:String>
+    <sys:String x:Key="ServerControl.BackupGraceDelaySuffix">seconds (wait for file handles to release)</sys:String>
     <sys:String x:Key="ServerControl.SessionHistory">Session history</sys:String>
     <sys:String x:Key="ServerControl.NoEventsYet">No events yet — start the server to build history.</sys:String>
     <sys:String x:Key="ServerControl.LiveLog">Live log</sys:String>

@@ -1,12 +1,20 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.4**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.5**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.4)
+## ✅ Completed (v1.0.0 → v1.6.5)
+
+### v1.6.5 — Backup Reliability
+- [x] Post-stop grace delay before backup (configurable 0–30s, default 3s)
+- [x] Backup-before-restart waits for full process exit before starting ZIP
+- [x] Ensures open log file handles are released before backup attempt
+- [x] Warning toast shown when process exit takes >10s (backup proceeds anyway)
+- [x] EN/DE localized grace delay label in Server Control
+- [x] GitHub release v1.6.5 published
 
 ### PAK Rebuild Fix (v1.6.4)
 - [x] Fixed incorrect JSON structure: multipliers now written under server.multipliers key

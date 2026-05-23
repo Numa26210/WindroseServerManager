@@ -196,9 +196,33 @@ public sealed class RestartScheduler : BackgroundService
         try { await _server.StopAsync(ct).ConfigureAwait(false); }
         catch (Exception ex) { _logger.LogError(ex, "Scheduled restart: stop failed"); }
 
-        // Backup on restart if enabled.
+        // Extra safety: wait for the process to be fully stopped (Stopped or Crashed).
+        // StopAsync already waits for exit, but the OS may still hold file handles open briefly.
+        try
+        {
+            using var exitCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            exitCts.CancelAfter(TimeSpan.FromSeconds(10));
+            while (_server.Status != ServerStatus.Stopped && _server.Status != ServerStatus.Crashed)
+            {
+                await Task.Delay(200, exitCts.Token).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Server process did not reach Stopped/Crashed state within 10s after stop — proceeding with backup anyway");
+            _notification.NotifyInfo("Server stop taking longer than expected. Proceeding with backup...");
+        }
+
         if (_settings.Current.BackupOnRestartEnabled)
         {
+            var graceDelay = Math.Clamp(_settings.Current.BackupGraceDelaySeconds, 0, 30);
+            if (graceDelay > 0)
+            {
+                _logger.LogInformation("Waiting {Grace}s grace delay before backup", graceDelay);
+                try { await Task.Delay(TimeSpan.FromSeconds(graceDelay), ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { return; }
+            }
+
             try
             {
                 _logger.LogInformation("Creating backup before restart");

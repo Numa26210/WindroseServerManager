@@ -6,12 +6,19 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.4**
+**Status: Stable · v1.6.5**
 
-![Version](https://img.shields.io/badge/version-1.6.4-success)
+![Version](https://img.shields.io/badge/version-1.6.5-success)
 ![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.6.5
+
+### 🐛 Bug Fix
+- **Fixed auto-backup failures on scheduled restart** — log files (e.g. `R5.log`) that were still locked by the server process no longer cause backup to fail. The app now waits for full process exit before starting the backup, plus a configurable grace delay (default 3s, adjustable 0–30s in Server Control).
 
 ---
 
@@ -161,6 +168,10 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🐛 Fixed multiplier JSON structure (nested under `server.multipliers`)
 - 🔧 Auto-migration of flat-structure config files on load
 - 🔄 Inline "Rebuilding PAK…" progress, deferred rebuild when server is running
+
+### v1.6.5 — Backup Reliability ✅ *released*
+- 🐛 Fixed auto-backup failures on scheduled restart (file lock on R5.log)
+- ⏱️ Configurable post-stop grace delay before backup (0–30s, default 3s)
 
 ### v1.7.0 — Automation & CLI *(next)*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart

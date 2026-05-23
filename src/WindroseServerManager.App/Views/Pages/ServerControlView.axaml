@@ -60,6 +60,13 @@
                     <CheckBox Content="{DynamicResource ServerControl.BackupOnRestart}" IsChecked="{Binding BackupOnRestartEnabled}" VerticalAlignment="Center" />
                 </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                            IsVisible="{Binding BackupOnRestartEnabled}">
+                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.BackupGraceDelay}" VerticalAlignment="Center" />
+                    <NumericUpDown Value="{Binding BackupGraceDelaySeconds}" Minimum="0" Maximum="30" FormatString="0" Width="100" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.BackupGraceDelaySuffix}" VerticalAlignment="Center" />
+                </StackPanel>
+
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Classes="primary" Content="{DynamicResource Action.Save}" Command="{Binding SaveRestartScheduleCommand}" />
                 </StackPanel>
