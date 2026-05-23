@@ -322,21 +322,21 @@
         <RowDefinition Height="8" />
       </Grid.RowDefinitions>
 
-      <Rectangle Grid.Row="0" Grid.Column="0" Cursor="SizeNorthWestSouthEast" Fill="Transparent"
+      <Rectangle Grid.Row="0" Grid.Column="0" Cursor="TopLeftCorner" Fill="Transparent"
                  PointerPressed="OnResizeNorthWest" />
       <Rectangle Grid.Row="0" Grid.Column="1" Cursor="SizeNorthSouth" Fill="Transparent"
                  PointerPressed="OnResizeNorth" />
-      <Rectangle Grid.Row="0" Grid.Column="2" Cursor="SizeNorthEastSouthWest" Fill="Transparent"
+      <Rectangle Grid.Row="0" Grid.Column="2" Cursor="TopRightCorner" Fill="Transparent"
                  PointerPressed="OnResizeNorthEast" />
       <Rectangle Grid.Row="1" Grid.Column="0" Cursor="SizeWestEast" Fill="Transparent"
                  PointerPressed="OnResizeWest" />
       <Rectangle Grid.Row="1" Grid.Column="2" Cursor="SizeWestEast" Fill="Transparent"
                  PointerPressed="OnResizeEast" />
-      <Rectangle Grid.Row="2" Grid.Column="0" Cursor="SizeNorthEastSouthWest" Fill="Transparent"
+      <Rectangle Grid.Row="2" Grid.Column="0" Cursor="BottomLeftCorner" Fill="Transparent"
                  PointerPressed="OnResizeSouthWest" />
       <Rectangle Grid.Row="2" Grid.Column="1" Cursor="SizeNorthSouth" Fill="Transparent"
                  PointerPressed="OnResizeSouth" />
-      <Rectangle Grid.Row="2" Grid.Column="2" Cursor="SizeNorthWestSouthEast" Fill="Transparent"
+      <Rectangle Grid.Row="2" Grid.Column="2" Cursor="BottomRightCorner" Fill="Transparent"
                  PointerPressed="OnResizeSouthEast" />
     </Grid>
   </Grid>
