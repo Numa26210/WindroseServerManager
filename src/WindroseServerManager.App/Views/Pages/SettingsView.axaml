@@ -305,9 +305,15 @@
                     </StackPanel>
 
                     <Button Content="{DynamicResource Settings.WindrosePlus.ManageButton}"
-                            Command="{Binding OpenWindrosePlusDialogCommand}"
-                            IsEnabled="{Binding HasServerConfigured}"
-                            HorizontalAlignment="Left" />
+                             Command="{Binding OpenWindrosePlusDialogCommand}"
+                             IsEnabled="{Binding HasServerConfigured}"
+                             HorizontalAlignment="Left" />
+                    <Button Classes="subtle"
+                             Content="{DynamicResource Settings.WindrosePlus.ForceReinstall}"
+                             Command="{Binding ForceReinstallWindrosePlusCommand}"
+                             IsVisible="{Binding CanForceReinstallWindrosePlus}"
+                             HorizontalAlignment="Left"
+                             IsEnabled="{Binding !IsForceReinstallBusy}" />
                 </StackPanel>
             </Border>
 

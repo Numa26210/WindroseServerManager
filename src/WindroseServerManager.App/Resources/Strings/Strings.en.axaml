@@ -97,6 +97,7 @@
     <sys:String x:Key="Dashboard.HostCpuFormat">CPU: {0:0.0}%</sys:String>
     <sys:String x:Key="Dashboard.HostRamFormat">RAM: {0}</sys:String>
     <sys:String x:Key="Dashboard.DiskFormat">Disk: {0}</sys:String>
+    <sys:String x:Key="Dashboard.Host.Free">free</sys:String>
     <sys:String x:Key="Dashboard.ActiveWorld">Active world</sys:String>
     <sys:String x:Key="Dashboard.NoActiveWorld">No world configured yet.</sys:String>
     <sys:String x:Key="Dashboard.GoToConfiguration">Go to configuration</sys:String>
@@ -482,6 +483,17 @@
     <sys:String x:Key="Confirm.WorldDelete.Title">Delete world?</sys:String>
     <sys:String x:Key="Confirm.WorldDelete.MessageFormat">Really delete world '{0}'? This action cannot be undone.</sys:String>
     <sys:String x:Key="Confirm.WorldDelete.Label">Delete</sys:String>
+
+    <!-- Confirm: Force Reinstall Windrose+ -->
+    <sys:String x:Key="Confirm.ForceReinstall.Title">Force Reinstall Windrose+</sys:String>
+    <sys:String x:Key="Confirm.ForceReinstall.Message">This will delete all existing Windrose+ files and reinstall from scratch. Your windrose_plus.json and .ini config files will be preserved. Continue?</sys:String>
+    <sys:String x:Key="Confirm.ForceReinstall.Label">Reinstall</sys:String>
+
+    <!-- Windrose+ Force Reinstall -->
+    <sys:String x:Key="Settings.WindrosePlus.ForceReinstall">Force Reinstall Windrose+</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusFilesMissing">Windrose+ files were not found. Installation state has been reset.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusForceReinstallSuccess">Windrose+ reinstalled successfully.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusForceReinstallFailed">Force reinstall failed: {0}</sys:String>
 
     <!-- Enum Labels: ServerStatus -->
     <sys:String x:Key="ServerStatus.Stopped">Stopped</sys:String>

@@ -274,7 +274,7 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
             HostCpu = host.CpuPercent;
             HostRamPercent = host.RamTotalBytes > 0 ? host.RamUsedBytes * 100.0 / host.RamTotalBytes : 0;
             HostRamText = $"{FormatGb(host.RamUsedBytes)} / {FormatGb(host.RamTotalBytes)}";
-            DiskText = $"{FormatGb(host.DiskFreeBytes)} frei / {FormatGb(host.DiskTotalBytes)}";
+            DiskText = $"{FormatGb(host.DiskFreeBytes)} {Loc.Get("Dashboard.Host.Free")} / {FormatGb(host.DiskTotalBytes)}";
             DiskUsedPercent = host.DiskTotalBytes > 0
                 ? (host.DiskTotalBytes - host.DiskFreeBytes) * 100.0 / host.DiskTotalBytes
                 : 0;
@@ -338,6 +338,26 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
                 // Also check physical marker — settings can be stale if another install wrote with trailing backslash
                 var wpPhysicallyInstalled = !string.IsNullOrWhiteSpace(serverDir) && File.Exists(Path.Combine(serverDir, ".wplus-version"));
                 var shouldShow = optState == OptInState.NeverAsked && !wpActive && !wpPhysicallyInstalled;
+
+                if (wpActive && !wpPhysicallyInstalled)
+                {
+                    Log.Warning("Windrose+ marked active but files missing — resetting state for {Dir}", serverDir);
+                    try
+                    {
+                        await _settings.UpdateAsync(s =>
+                        {
+                            s.WindrosePlusActiveByServer.Remove(serverDir);
+                            s.WindrosePlusActiveByServer.Remove(serverDir + "\\");
+                        }).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "Failed to reset stale W+ state for {Dir}", serverDir);
+                    }
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        _toasts.Warning(Loc.Get("Toast.WindrosePlusFilesMissing")));
+                    wpActive = false;
+                }
 
                 // Hide while an install is in progress (Pitfall 7: banner hidden during active install)
                 if (shouldShow && RetrofitBanner is { IsInstalling: true })

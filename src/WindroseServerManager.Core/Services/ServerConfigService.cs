@@ -23,8 +23,22 @@ public sealed class ServerConfigService : IServerConfigService
 
     // Offizielle Struktur laut Windrose Community-Guide:
     // {ServerInstallDir}\R5\Saved\SaveProfiles\Default\RocksDB\{GameVersion}\Worlds\{IslandId}\WorldDescription.json
-    private static readonly string RocksDbRelativeDir =
-        Path.Combine("R5", "Saved", "SaveProfiles", "Default", "RocksDB");
+    // Post-0.10.0.5.120: RocksDB_v2 is used instead of RocksDB.
+    private static readonly string RocksDbBaseRelativeDir =
+        Path.Combine("R5", "Saved", "SaveProfiles", "Default");
+
+    private static readonly string RocksDbV2DirName = "RocksDB_v2";
+    private static readonly string RocksDbV1DirName = "RocksDB";
+
+    private string ResolveRocksDbDir(string serverRoot)
+    {
+        var basePath = Path.Combine(serverRoot, RocksDbBaseRelativeDir);
+        var v2 = Path.Combine(basePath, RocksDbV2DirName);
+        var v1 = Path.Combine(basePath, RocksDbV1DirName);
+        if (Directory.Exists(v2)) return v2;
+        if (Directory.Exists(v1)) return v1;
+        return v2;
+    }
 
     private readonly ILogger<ServerConfigService> _logger;
     private readonly IAppSettingsService _settings;
@@ -67,16 +81,16 @@ public sealed class ServerConfigService : IServerConfigService
     private string? ResolveWorldsRoot() => ResolveOrCreateWorldsRoot(createIfMissing: false);
 
     /// <summary>
-    /// Sucht den aktuellsten GameVersion-Unterordner unter {InstallDir}\R5\Saved\SaveProfiles\Default\RocksDB\.
-    /// Wenn keiner existiert und <paramref name="createIfMissing"/> true ist, wird ein Ordner
-    /// mit einer aus DeploymentId abgeleiteten (oder Default-)GameVersion angelegt.
+    /// Sucht den aktuellsten GameVersion-Unterordner unter {InstallDir}\R5\Saved\SaveProfiles\Default\RocksDB_v2\
+    /// (oder RocksDB\ als Fallback). Wenn keiner existiert und <paramref name="createIfMissing"/> true ist,
+    /// wird ein Ordner mit einer aus DeploymentId abgeleiteten (oder Default-)GameVersion angelegt.
     /// </summary>
     private string? ResolveOrCreateWorldsRoot(bool createIfMissing)
     {
         var root = GetConfigRoot();
         if (root is null) return null;
 
-        var rocksDbDir = Path.Combine(root, RocksDbRelativeDir);
+        var rocksDbDir = ResolveRocksDbDir(root);
 
         if (Directory.Exists(rocksDbDir))
         {

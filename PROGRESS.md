@@ -1,12 +1,24 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.6**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.7**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.6)
+## ✅ Completed (v1.0.0 → v1.6.7)
+
+### v1.6.7 — Localization, W+ Reinstall & RocksDB_v2 Fix
+- [x] Fixed hardcoded "frei" in Dashboard > Host — now properly localized (EN/DE)
+- [x] Full audit of Dashboard Host section for remaining hardcoded German strings
+- [x] Auto-reset stale W+ install flag on startup when files are missing from disk
+- [x] Warning toast shown when W+ installation state is auto-corrected
+- [x] "Force Reinstall Windrose+" button with confirm dialog (config files preserved)
+- [x] EN/DE localized — button, dialog, toasts
+- [x] Auto-detect RocksDB_v2 vs RocksDB world path at runtime (post-0.10.0.5.120 compat)
+- [x] World Selection dropdown, "Open Worlds folder", and config read/write all use resolved path
+- [x] Inline warning shown if neither RocksDB path is found
+- [x] GitHub release v1.6.7 published
 
 ### v1.6.6 — Window Resize Fix
 - [x] Restored window resize on all 8 edges/corners (broken by custom WindowDecorations=None chrome)

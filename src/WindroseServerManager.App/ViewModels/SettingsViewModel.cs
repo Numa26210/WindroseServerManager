@@ -90,6 +90,7 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty] private bool _isVersionListLoading;
     [ObservableProperty] private string? _installedWindrosePlusVersion;
+    [ObservableProperty] private bool _isForceReinstallBusy;
     public ObservableCollection<string> AvailableWindrosePlusVersions { get; } = new();
 
     [ObservableProperty] private string _backupDirOverride = string.Empty;
@@ -798,10 +799,61 @@ public partial class SettingsViewModel : ViewModelBase
             if (string.IsNullOrWhiteSpace(dir)) return Loc.Get("Settings.WindrosePlus.StatusNoServer");
             var active = _settings.Current.WindrosePlusActiveByServer.GetValueOrDefault(dir, false);
             if (active) return Loc.Get("Settings.WindrosePlus.StatusActive");
-            var state = _settings.Current.WindrosePlusOptInStateByServer.GetValueOrDefault(dir, OptInState.NeverAsked);
+            var state = _settings.Current.WindrosePlusOptInStateByServer.GetValueOrDefault(dir, OptInState.OptedOut);
             return state == OptInState.OptedOut
                 ? Loc.Get("Settings.WindrosePlus.StatusOptedOut")
                 : Loc.Get("Settings.WindrosePlus.StatusNotInstalled");
+        }
+    }
+
+    public bool CanForceReinstallWindrosePlus
+    {
+        get
+        {
+            var dir = _settings.ActiveServerDir;
+            if (string.IsNullOrWhiteSpace(dir)) return false;
+            return _wplus.IsPhysicallyInstalled(dir);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanForceReinstallWindrosePlus))]
+    private async Task ForceReinstallWindrosePlusAsync(CancellationToken ct)
+    {
+        var dir = _settings.ActiveServerDir;
+        if (string.IsNullOrWhiteSpace(dir)) return;
+
+        var top = Avalonia.Application.Current?.ApplicationLifetime
+            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime d ? d.MainWindow : null;
+        if (top is null) return;
+
+        var confirmed = await ConfirmDialog.ShowAsync(
+            top,
+            Loc.Get("Confirm.ForceReinstall.Title"),
+            Loc.Get("Confirm.ForceReinstall.Message"),
+            Loc.Get("Confirm.ForceReinstall.Label"));
+        if (!confirmed) return;
+
+        IsForceReinstallBusy = true;
+        try
+        {
+            await _wplus.DeleteInstallFilesAsync(dir, ct);
+
+            var result = await _wplus.InstallAsync(dir, null, ct);
+            if (result is not null)
+            {
+                _toasts.Success(Loc.Get("Toast.WindrosePlusForceReinstallSuccess"));
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Force reinstall of Windrose+ failed");
+            _toasts.Error(Loc.Format("Toast.WindrosePlusForceReinstallFailed", ex.Message));
+        }
+        finally
+        {
+            IsForceReinstallBusy = false;
+            OnPropertyChanged(nameof(CanForceReinstallWindrosePlus));
+            OnPropertyChanged(nameof(WindrosePlusStatusText));
         }
     }
 

@@ -746,6 +746,62 @@ public sealed class WindrosePlusService : IWindrosePlusService
         }
     }
 
+    public bool IsPhysicallyInstalled(string serverInstallDir)
+    {
+        if (string.IsNullOrWhiteSpace(serverInstallDir)) return false;
+        return File.Exists(Path.Combine(serverInstallDir, VersionMarkerFileName));
+    }
+
+    public async Task DeleteInstallFilesAsync(string serverInstallDir, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(serverInstallDir);
+        var serverDirFull = Path.GetFullPath(serverInstallDir).TrimEnd('\\', '/');
+
+        var preserveNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "windrose_plus.json",
+            "windrose_plus_data",
+        };
+
+        var wplusDirs = new[] { "windrose_plus", "tools", "UE4SS" };
+        foreach (var dirName in wplusDirs)
+        {
+            var dir = Path.Combine(serverDirFull, dirName);
+            if (!Directory.Exists(dir)) continue;
+
+            if (preserveNames.Contains(dirName)) continue;
+
+            try
+            {
+                Directory.Delete(dir, recursive: true);
+                _logger.LogInformation("Deleted W+ directory: {Dir}", dir);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete W+ directory: {Dir}", dir);
+            }
+        }
+
+        var preserveExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".json", ".ini" };
+        var filesInRoot = new[] { ".wplus-version", "StartWindrosePlusServer.bat" };
+        foreach (var fileName in filesInRoot)
+        {
+            var path = Path.Combine(serverDirFull, fileName);
+            if (!File.Exists(path)) continue;
+            try
+            {
+                File.Delete(path);
+                _logger.LogInformation("Deleted W+ file: {Path}", path);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete W+ file: {Path}", path);
+            }
+        }
+
+        await Task.CompletedTask;
+    }
+
     public void Dispose()
     {
         foreach (var (dir, proc) in _dashboardProcesses)

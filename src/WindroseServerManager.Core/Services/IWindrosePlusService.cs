@@ -40,6 +40,16 @@ public interface IWindrosePlusService : IDisposable
     /// on every launch to retrofit servers that were installed before this workaround existed.
     /// </summary>
     void EnsureRootToolsMirror(string serverInstallDir);
+
+    /// <summary>Returns true if the .wplus-version marker file exists in the server directory.</summary>
+    bool IsPhysicallyInstalled(string serverInstallDir);
+
+    /// <summary>
+    /// Deletes all Windrose+ files and folders from the server directory, preserving
+    /// windrose_plus.json, *.ini config files, and windrose_plus_data/.
+    /// Does NOT reset any settings flags — caller is responsible for that.
+    /// </summary>
+    Task DeleteInstallFilesAsync(string serverInstallDir, CancellationToken ct = default);
 }
 
 /// <summary>Thrown when a fresh install is attempted while offline and no cached archive exists.</summary>

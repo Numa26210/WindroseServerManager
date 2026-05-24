@@ -97,6 +97,7 @@
     <sys:String x:Key="Dashboard.HostCpuFormat">CPU: {0:0.0}%</sys:String>
     <sys:String x:Key="Dashboard.HostRamFormat">RAM: {0}</sys:String>
     <sys:String x:Key="Dashboard.DiskFormat">Disk: {0}</sys:String>
+    <sys:String x:Key="Dashboard.Host.Free">frei</sys:String>
     <sys:String x:Key="Dashboard.ActiveWorld">Aktive Welt</sys:String>
     <sys:String x:Key="Dashboard.NoActiveWorld">Noch keine Welt konfiguriert.</sys:String>
     <sys:String x:Key="Dashboard.GoToConfiguration">Zur Konfiguration</sys:String>
@@ -482,6 +483,17 @@
     <sys:String x:Key="Confirm.WorldDelete.Title">Welt löschen?</sys:String>
     <sys:String x:Key="Confirm.WorldDelete.MessageFormat">Möchten Sie die Welt '{0}' wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.</sys:String>
     <sys:String x:Key="Confirm.WorldDelete.Label">Löschen</sys:String>
+
+    <!-- Confirm: Windrose+ Neuinstallation -->
+    <sys:String x:Key="Confirm.ForceReinstall.Title">Windrose+ neu installieren</sys:String>
+    <sys:String x:Key="Confirm.ForceReinstall.Message">Alle vorhandenen Windrose+-Dateien werden gelöscht und neu installiert. Deine windrose_plus.json und .ini-Konfigurationsdateien bleiben erhalten. Fortfahren?</sys:String>
+    <sys:String x:Key="Confirm.ForceReinstall.Label">Neu installieren</sys:String>
+
+    <!-- Windrose+ Neuinstallation -->
+    <sys:String x:Key="Settings.WindrosePlus.ForceReinstall">Windrose+ neu installieren</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusFilesMissing">Windrose+-Dateien nicht gefunden. Installationsstatus wurde zurückgesetzt.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusForceReinstallSuccess">Windrose+ erfolgreich neu installiert.</sys:String>
+    <sys:String x:Key="Toast.WindrosePlusForceReinstallFailed">Neuinstallation fehlgeschlagen: {0}</sys:String>
 
     <!-- Enum Labels: ServerStatus -->
     <sys:String x:Key="ServerStatus.Stopped">Gestoppt</sys:String>
