@@ -194,22 +194,61 @@ public sealed class ServerConfigServiceTests : IDisposable
     }
 
     // ---------------------------------------------------------------
-    // 10. SaveWorldDescriptionAsync — auto-creates Worlds dir
+    // 10a. SaveWorldDescriptionAsync — auto-creates Worlds dir (RocksDB_v2)
     // ---------------------------------------------------------------
     [Fact]
-    public async Task SaveWorldDescriptionAsync_AutoCreatesWorldsDir()
+    public async Task SaveWorldDescriptionAsync_AutoCreatesWorldsDir_RocksDbV2()
     {
         Directory.CreateDirectory(_installDir);
-        // No RocksDB directory exists yet. The service should create it.
 
-        var world = new WorldDescription { WorldName = "Auto Created" };
+        var world = new WorldDescription { WorldName = "Auto Created V2" };
         await _sut.SaveWorldDescriptionAsync("island-new", world);
 
-        // The default version path: R5/Saved/SaveProfiles/Default/RocksDB/0.10.0/Worlds/island-new/
         var worldDir = Path.Combine(_installDir, "R5", "Saved", "SaveProfiles", "Default",
-            "RocksDB", "0.10.0", "Worlds", "island-new");
+            "RocksDB_v2", "0.10.0", "Worlds", "island-new");
         Assert.True(Directory.Exists(worldDir));
         Assert.True(File.Exists(Path.Combine(worldDir, "WorldDescription.json")));
+    }
+
+    // ---------------------------------------------------------------
+    // 10b. SaveWorldDescriptionAsync — writes to RocksDB when only v1 exists
+    // ---------------------------------------------------------------
+    [Fact]
+    public async Task SaveWorldDescriptionAsync_WritesToRocksDb_WhenOnlyV1Exists()
+    {
+        Directory.CreateDirectory(_installDir);
+        var rocksDbDir = Path.Combine(_installDir, "R5", "Saved", "SaveProfiles", "Default", "RocksDB");
+        Directory.CreateDirectory(rocksDbDir);
+
+        var world = new WorldDescription { WorldName = "Legacy World" };
+        await _sut.SaveWorldDescriptionAsync("island-legacy", world);
+
+        var worldDir = Path.Combine(_installDir, "R5", "Saved", "SaveProfiles", "Default",
+            "RocksDB", "0.10.0", "Worlds", "island-legacy");
+        Assert.True(Directory.Exists(worldDir));
+        Assert.True(File.Exists(Path.Combine(worldDir, "WorldDescription.json")));
+    }
+
+    // ---------------------------------------------------------------
+    // 10c. SaveWorldDescriptionAsync — prefers RocksDB_v2 over RocksDB
+    // ---------------------------------------------------------------
+    [Fact]
+    public async Task SaveWorldDescriptionAsync_PrefersRocksDbV2_WhenBothExist()
+    {
+        Directory.CreateDirectory(_installDir);
+        var baseDir = Path.Combine(_installDir, "R5", "Saved", "SaveProfiles", "Default");
+        Directory.CreateDirectory(Path.Combine(baseDir, "RocksDB"));
+        Directory.CreateDirectory(Path.Combine(baseDir, "RocksDB_v2"));
+
+        var world = new WorldDescription { WorldName = "V2 Preferred" };
+        await _sut.SaveWorldDescriptionAsync("island-v2pref", world);
+
+        var worldDirV2 = Path.Combine(baseDir, "RocksDB_v2", "0.10.0", "Worlds", "island-v2pref");
+        Assert.True(Directory.Exists(worldDirV2));
+        Assert.True(File.Exists(Path.Combine(worldDirV2, "WorldDescription.json")));
+
+        var worldDirV1 = Path.Combine(baseDir, "RocksDB", "0.10.0", "Worlds", "island-v2pref");
+        Assert.False(Directory.Exists(worldDirV1));
     }
 
     // ---------------------------------------------------------------
@@ -465,6 +504,7 @@ public sealed class ServerConfigServiceTests : IDisposable
 
     /// <summary>
     /// Creates the full RocksDB/{version}/Worlds directory under the install dir.
+    /// Uses RocksDB (v1) for backward-compatible tests.
     /// </summary>
     private string CreateWorldsRoot(string version)
     {
