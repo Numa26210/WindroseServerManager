@@ -6,26 +6,35 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.6.7**
+**Status: Stable · v1.7.0**
 
-![Version](https://img.shields.io/badge/version-1.6.7-success)
-![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.7.0-success)
+![Tests](https://img.shields.io/badge/tests-268%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
 
 ---
 
-## What's new in v1.6.7
+## What's new in v1.7.0
 
-### 🐛 Critical Fix — RocksDB_v2 path migration
-- After the 0.10.0.5.120 server update, worlds were stored in `RocksDB_v2` but the app was still reading/writing to the legacy `RocksDB` folder. World list, "Open Worlds folder", and all config changes now auto-detect and use the correct path.
+### 🖥️ CLI via Named Pipe (IPC)
+- Control WSM from any script or terminal via `\\.\pipe\WindroseServerManager`
+- Commands: `start`, `stop`, `restart`, `backup`, `status`, `shutdown`
+- Bidirectional JSON protocol with deadlock-free `ReadLineAsync`
 
-### 🔧 Windrose+ Self-Healing & Force Reinstall
-- Missing W+ files on startup → install state auto-reset + warning toast.
-- New **"Force Reinstall Windrose+"** button in Settings: reinstalls W+ from scratch while preserving your config files (windrose_plus.json + .ini).
+### 🤖 Discord — Session History Events
+- Server lifecycle events forwarded to Discord as rich embeds (Started, Stopped, Crashed, Player join/leave)
+- Anti Rate-Limit: batched in `ConcurrentQueue`, flushed every 3 seconds
+- Clean unsubscribe on bot stop — no memory leaks
 
-### 🌐 Localization Fix — Dashboard "frei"
-- The hardcoded German "frei" in Dashboard > Host is now properly localized: English → "free", German → "frei".
+### 🔄 Reliability — Watchdog & Restart Scheduler
+- Watchdog correctly handles `Crashed` status and triggers auto-restart
+- `KillAsync()` prevents unwanted auto-restart after Force Kill
+- RestartScheduler retries on failure instead of marking success prematurely
+
+### 🌐 Windrose+ Remote Host
+- `WindrosePlusApiService` now supports remote host/port (not just localhost)
+- Circuit Breaker: 3 failures → 60s cooldown
 
 ---
 
@@ -198,16 +207,15 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🐛 Fixed auto-backup failures on scheduled restart (file lock on R5.log)
 - ⏱️ Configurable post-stop grace delay before backup (0–30s, default 3s)
 
-### v1.7.0 — Automation & CLI *(next)*
+### v1.7.0 — Automation & CLI ✅ *released*
 - ⌨️ CLI/CMDlets for clean shutdown, backup trigger, scheduled restart
 - 🔄 Native daily restart with auto-backup (no more `taskkill` workaround)
 - 🔔 Discord notification events (player join/leave, crash alerts)
 - 🌍 Remote Windrose+ host support (IP/port/password instead of localhost)
 
-### v1.8.0 — Collaboration Merge
-- 🛡️ Merge PR #17 from DazClimax: watchdog service, UI skin selection, backup improvements
-- 🤝 Merge remaining community contributions
-- 🔄 Cross-fork CI: auto-build + test all incoming PRs
+### v1.8.0 — Collaboration & CI
+- 🛡️ Merge PR #17 from DazClimax: watchdog service, backup improvements
+- 🔄 Cross-fork CI: auto-build + test all incoming PRs via GitHub Actions
 
 ### v2.x — Future
 - 🖥️ Multi-server concurrent launch
@@ -232,7 +240,7 @@ A huge thank-you to **HumanGenome** for building Windrose+, keeping the API stab
 ### 🤖 Discord Bot Integration *(v1.3.0+)*
 - Bot runs as a background service — starts and stops with the app
 - Live server status as Discord Activity
-- Session history events forwarded to a configurable Discord channel
+- Session history events forwarded to a configurable Discord channel *(v1.7.0: rich embeds with anti-rate-limit batching)*
 - Slash commands: `/status`, `/start`, `/stop`, `/restart`, `/backup`, `/backuprestart`, `/update`
 - All critical commands restricted to Discord Server Administrators
 - Configure Token, Guild ID and Log Channel ID directly from Settings
@@ -258,6 +266,7 @@ A huge thank-you to **HumanGenome** for building Windrose+, keeping the API stab
 - Safeguards: no double-registering the same folder, no overwriting Windrose+ while a server is running.
 
 ### Server control & automation
+- **CLI via IPC Named Pipe** *(v1.7.0)* — control WSM from any script or terminal: `start`, `stop`, `restart`, `backup`, `status`, `shutdown`
 - **Start / Graceful-Stop / Force-Kill / Restart**
 - **Auto-restart on crash** (opt-in)
 - **Scheduled restarts** per weekday with configurable warning toast
@@ -338,12 +347,12 @@ No separate .NET install required — the self-contained build ships everything.
 ## Install
 
 ### Option A: Installer (recommended)
-1. Download `WindroseServerManager-Setup-1.6.2.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-v1.7.0-Setup.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Run the installer, follow the prompts
 3. Launch from the Start Menu
 
 ### Option B: Portable ZIP
-1. Download `WindroseServerManager-1.6.2-portable.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-v1.7.0-win-x64.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Extract anywhere
 3. Run `WindroseServerManager.exe`
 
@@ -439,7 +448,7 @@ WindroseServerManager/
 
 ## Tests
 
-Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit) — **235 passing**:
+Unit tests in `tests/WindroseServerManager.Core.Tests` (xUnit) — **268 passing**:
 
 ```powershell
 dotnet test

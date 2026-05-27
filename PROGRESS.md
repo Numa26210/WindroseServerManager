@@ -1,12 +1,29 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.6.7**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.7.0**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.6.7)
+## ✅ Completed (v1.0.0 → v1.7.0)
+
+### v1.7.0 — Automation, CLI & Self-Update
+- [x] In-app self-update: "Download" downloads ZIP, applies update, restarts app
+- [x] SHA-256 verification of downloaded update ZIP
+- [x] Progress bar + Cancel in update banner
+- [x] CLI: --start / --stop / --restart / --backup / --status via Named Pipe IPC
+- [x] Headless mode for CLI commands when no UI instance is running
+- [x] Native daily restart scheduler (Stop → Backup → Start, no taskkill)
+- [x] Configurable restart time + auto-backup toggle in Settings UI
+- [x] Discord notifications: crash, backup done/fail, update available, restart warning
+- [x] Each Discord notification type individually toggleable in Settings
+- [x] Dashboard: CPU sparkline chart, crash summary, auto-restart counter
+- [x] Backup Manager: per-backup origin tracking (Manual/Auto/PreRestart/PreLaunch/PreConfig)
+- [x] Open in Explorer per backup
+- [x] EN/DE localized — all new strings
+- [x] **268 passing tests** (up from 235 in v1.6.7)
+- [x] GitHub release v1.7.0 published
 
 ### v1.6.7 — Localization, W+ Reinstall & RocksDB_v2 Fix
 - [x] Fixed hardcoded "frei" in Dashboard > Host — now properly localized (EN/DE)
@@ -168,16 +185,9 @@
 
 ## 🔄 Roadmap
 
-### v1.7.0 — Automation & CLI *(next)*
-- [ ] CLI/CMDlets for clean shutdown, backup trigger, scheduled restart — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
-- [ ] Native daily restart with auto-backup (no more `taskkill` workaround) — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9)
-- [ ] Discord notification events (player join/leave, server crash alerts)
-- [ ] Remote Windrose+ host support (IP/port/password instead of localhost) — [#1](https://github.com/Numa26210/WindroseServerManager/issues/1)
-
-### v1.8.0 — Collaboration Merge
-- [ ] Merge PR #17 from DazClimax: watchdog service, UI skin selection (dark theme variant), backup on scheduled restart improvements
-- [ ] Merge remaining shepherdcreations contributions (mod conflict scanner already integrated in v1.6.0)
-- [ ] Cross-fork CI: auto-build + test all incoming PRs
+### v1.8.0 — Collaboration & CI
+- [ ] Merge PR #17 from DazClimax (watchdog service, backup on scheduled restart improvements)
+- [ ] Cross-fork CI: auto-build + test all incoming PRs via GitHub Actions
 
 ### v2.x — Future
 - [ ] Multi-server concurrent launch

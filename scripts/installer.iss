@@ -4,9 +4,9 @@
 
 #define MyAppName "Windrose Server Manager"
 #ifndef MyAppVersion
-  #define MyAppVersion "1.6.0"
+  #define MyAppVersion "1.7.0"
 #endif
-#define MyAppPublisher "Manuel Staggl / Numa26210"
+#define MyAppPublisher "Numa26210"
 #define MyAppURL "https://github.com/Numa26210/WindroseServerManager"
 #define MyAppExeName "WindroseServerManager.exe"
 
@@ -23,7 +23,8 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=..\LICENSE
 OutputDir=..\artifacts
-OutputBaseFilename=WindroseServerManager-Setup-{#MyAppVersion}
+OutputBaseFilename=WindroseServerManager-v{#MyAppVersion}-Setup
+VersionInfoVersion=1.7.0.0
 SetupIconFile=..\src\WindroseServerManager.App\Assets\app.ico
 Compression=lzma2/ultra
 SolidCompression=yes
