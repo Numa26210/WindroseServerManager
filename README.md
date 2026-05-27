@@ -31,6 +31,14 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 - Watchdog correctly handles `Crashed` status and triggers auto-restart
 - `KillAsync()` prevents unwanted auto-restart after Force Kill
 - RestartScheduler retries on failure instead of marking success prematurely
+- **`ServerWatchdogService`** — dedicated background watchdog with desired-running-state persistence across reboots *(contributed by [DazClimax](https://github.com/DazClimax), [PR #17](https://github.com/ManuelStaggl/WindroseServerManager/pull/17))*
+- **Auto-start delay** (0–60 s) — lets secondary drives mount before server pre-launch *(DazClimax)*
+- **Pre-restart hooks** — install update, create backup, send RCON broadcast before every automated restart *(DazClimax)*
+
+### 🎨 UI Improvements *(contributed by [DazClimax](https://github.com/DazClimax), [PR #17](https://github.com/ManuelStaggl/WindroseServerManager/pull/17))*
+- **Dedicated Logs page** (`ServerLogViewModel`) extracted from Automation — live log, filter, search, export, buffer size
+- **Theme system** (`AppSkinService`) — "Windrose Classic" and "Dark" skins, switchable instantly from Settings
+- **Settings redesigned** as a tabbed layout (General / Server / System / Windrose+ / About)
 
 ### 🌐 Windrose+ Remote Host
 - `WindrosePlusApiService` now supports remote host/port (not just localhost)
@@ -212,9 +220,9 @@ A fully integrated Discord bot running as a background service alongside the Ava
 - 🔄 Native daily restart with auto-backup (no more `taskkill` workaround)
 - 🔔 Discord notification events (player join/leave, crash alerts)
 - 🌍 Remote Windrose+ host support (IP/port/password instead of localhost)
+- 🔧 Integrated features from [DazClimax's PR #17](https://github.com/ManuelStaggl/WindroseServerManager/pull/17): `ServerWatchdogService`, auto-start delay, pre-restart update/backup/broadcast, theme system, dedicated Logs page
 
 ### v1.8.0 — Collaboration & CI
-- 🛡️ Merge PR #17 from DazClimax: watchdog service, backup improvements
 - 🔄 Cross-fork CI: auto-build + test all incoming PRs via GitHub Actions
 
 ### v2.x — Future
@@ -304,6 +312,7 @@ A huge thank-you to **HumanGenome** for building Windrose+, keeping the API stab
 
 ### Design
 - Native dark UI (Avalonia 12 + Semi.Avalonia + custom navy/amber brand layer)
+- **Theme system** — "Windrose Classic" and "Dark" skins, switchable from Settings *(v1.7.0)*
 - Maritime/pirate flavour, but functional first
 - Mica backdrop on Windows 11
 - Custom window chrome with Windows 11 rounded corners
@@ -460,6 +469,7 @@ Covers: mod install/uninstall/enable/disable, side-car metadata I/O, Nexus URL p
 
 - **[Windrose+](https://github.com/HumanGenome/WindrosePlus)** by **HumanGenome** — MIT-licensed mod that powers all player-management features in this app.
 - **[ManuelStaggl](https://github.com/ManuelStaggl/WindroseServerManager)** — original author of WindroseServerManager. This fork builds on their work.
+- **[DazClimax](https://github.com/DazClimax)** — contributed `ServerWatchdogService`, desired-running-state persistence, auto-start delay, pre-restart update/backup/RCON broadcast hooks, `AppSkinService` (theme system), dedicated `ServerLogViewModel` / Logs page, and `SettingsView` tab layout refactor ([PR #17](https://github.com/ManuelStaggl/WindroseServerManager/pull/17)). Features integrated and extended in v1.7.0.
 - The Windrose admin community on Reddit — every "is there a way to kick a player?" thread shaped what this app became.
 
 ## License
