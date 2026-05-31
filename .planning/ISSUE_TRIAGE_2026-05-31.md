@@ -41,20 +41,7 @@ URL: https://github.com/Numa26210/WindroseServerManager/issues/8
 
 Initial classification: Avalonia/SkiaSharp native load failure at startup on Windows 10. Likely missing native dependency, GPU/render backend issue, or packaging/runtime problem.
 
-Suggested maintainer reply:
-
-```md
-Thanks, the stack trace helps. The crash happens very early while Avalonia initializes Skia (`SkiaSharp.SKImageInfo`), so this is likely a native graphics/runtime load problem rather than server config.
-
-Could you add:
-
-- Whether you used the installer or the portable zip
-- Your GPU model and driver version
-- Whether the app is running over RDP/VM
-- Any `.log` file from `%LocalAppData%\WindroseServerManager\logs`
-
-I will check whether the package is missing a native Skia dependency or whether we need a fallback render/startup mode.
-```
+Maintainer action: do not post another reply yet. A prior owner comment already gave a concrete .NET single-file / Skia extraction diagnosis and workaround steps. Wait for reporter feedback before adding more noise.
 
 ### #1 - Existing server install on another machine
 
@@ -289,6 +276,6 @@ WebUI/remote management is still a larger feature request, not a quick fix. Plea
 - [ ] Post redirect comments on upstream issues #18, #16, #15, #13, #9, #6, #5 first because the fork clearly addresses them.
 - [ ] Post softer redirect comments on upstream #10, #7, #3 because they are likely addressed or mitigated but need reporter confirmation.
 - [ ] Ask upstream #4 and #1 reporters to reopen in the fork as feature requests.
-- [ ] Reply on fork issues #9, #8, #1 with diagnostic questions above.
+- [ ] Reply on fork issues #9 and #1 with diagnostic questions above; leave #8 alone unless the reporter responds.
 - [ ] Add GitHub issue templates to the fork for bug reports, feature requests, and support questions.
 - [ ] Install/authenticate GitHub tooling or provide an API token before attempting issue writes.
