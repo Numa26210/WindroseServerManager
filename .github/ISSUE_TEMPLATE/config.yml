@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Active community fork releases
+    url: https://github.com/Numa26210/WindroseServerManager/releases
+    about: Download the latest maintained release.
+  - name: Active community fork discussions/issues
+    url: https://github.com/Numa26210/WindroseServerManager/issues
+    about: Search existing reports before opening a new one.

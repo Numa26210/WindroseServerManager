@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest an improvement for Windrose Server Manager.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what currently makes it difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or workflow you want.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workaround you use today, or other designs you would accept.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Server install/update
+        - Server control / automation
+        - Windrose+
+        - Backups
+        - Mods
+        - Discord
+        - UI / usability
+        - Packaging / release
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues before opening this one.
+          required: true

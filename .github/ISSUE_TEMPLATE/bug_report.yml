@@ -1,0 +1,72 @@
+name: Bug report
+description: Report a reproducible Windrose Server Manager problem.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Windrose Server Manager. Please include enough detail to reproduce the issue.
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: Example: 1.7.0
+      placeholder: "1.7.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-type
+    attributes:
+      label: Install type
+      options:
+        - Installer
+        - Portable ZIP
+        - Built from source
+        - Other / unsure
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Windows version
+      placeholder: "Windows 10 22H2 / Windows 11 24H2 / Windows Server"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or crash details
+      description: Paste relevant logs from %LocalAppData%\WindroseServerManager\logs or the crash dialog.
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag screenshots here if they help explain the issue.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I am using the latest release from the Numa26210 fork.
+          required: true
+        - label: I searched existing issues before opening this one.
+          required: true
