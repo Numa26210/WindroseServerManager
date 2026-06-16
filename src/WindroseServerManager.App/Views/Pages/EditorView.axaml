@@ -107,7 +107,8 @@
                                             <DataTemplate x:DataType="vm:ConfigEntryViewModel">
                                                 <Border BorderBrush="{DynamicResource BrandNavyBorderBrush}"
                                                         BorderThickness="0,0,0,1"
-                                                        Padding="16,14">
+                                                        Padding="16,14"
+                                                        IsEnabled="{Binding IsEnabled}">
                                                     <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
 
                                                         <!-- Float: header row (name + desc + value badge + reset) -->

@@ -251,7 +251,6 @@
     <sys:String x:Key="Backups.Col.File">Datei</sys:String>
     <sys:String x:Key="Backups.Col.Created">Erstellt</sys:String>
     <sys:String x:Key="Backups.Col.SizeMb">Größe (MB)</sys:String>
-    <sys:String x:Key="Backups.Col.Automatic">Automatisch</sys:String>
     <sys:String x:Key="Backups.None.Title">Keine Backups vorhanden</sys:String>
     <sys:String x:Key="Backups.None">Klicke auf 'Backup jetzt erstellen', um ein Backup anzulegen.</sys:String>
 
@@ -259,11 +258,10 @@
     <sys:String x:Key="Settings.Title">Einstellungen</sys:String>
     <sys:String x:Key="Settings.Subtitle">App-Konfiguration</sys:String>
     <sys:String x:Key="Settings.Group.Display">DARSTELLUNG</sys:String>
-    <sys:String x:Key="Settings.Group.Server">SERVER</sys:String>
-    <sys:String x:Key="Settings.Group.System">NETZWERK &amp; SYSTEM</sys:String>
-    <sys:String x:Key="Settings.Group.WindrosePlus">WINDROSE+</sys:String>
-    <sys:String x:Key="Settings.Group.App">APP</sys:String>
-    <sys:String x:Key="Settings.Group.General">ALLGEMEIN</sys:String>
+    <sys:String x:Key="Settings.Group.Server">Server</sys:String>
+    <sys:String x:Key="Settings.Group.System">System</sys:String>
+    <sys:String x:Key="Settings.Group.WindrosePlus">Windrose+</sys:String>
+    <sys:String x:Key="Settings.Group.General">Allgemein</sys:String>
     <sys:String x:Key="Settings.Group.About">ÜBER</sys:String>
     <sys:String x:Key="Settings.Group.Discord">DISCORD</sys:String>
     <sys:String x:Key="Settings.Group.PerServerFolders">SERVER-SPEZIFISCHE ORDNER</sys:String>
@@ -938,13 +936,101 @@
     <sys:String x:Key="QoL.HarvestYield.Name">Ernteertrag</sys:String>
     <sys:String x:Key="QoL.HarvestYield.Desc">Menge der Ressourcen pro Ernte oder Abbau-Aktion.</sys:String>
     <sys:String x:Key="QoL.StackSize.Name">Stapelgröße</sys:String>
-    <sys:String x:Key="QoL.StackSize.Desc">Maximale Anzahl Gegenstände pro Inventar-Slot. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.StackSize.Desc">Deaktiviert — wird durch Windrose+ Pak-Mod gesteuert</sys:String>
     <sys:String x:Key="QoL.InventorySize.Name">Inventargröße</sys:String>
-    <sys:String x:Key="QoL.InventorySize.Desc">Anzahl verfügbarer Inventar-Slots je Spieler. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.InventorySize.Desc">Deaktiviert — wird durch Windrose+ Pak-Mod gesteuert</sys:String>
     <sys:String x:Key="QoL.Weight.Name">Traglast</sys:String>
-    <sys:String x:Key="QoL.Weight.Desc">Maximale Traglast der Spieler. Bekanntes Absturzrisiko mit Pak-Mods.</sys:String>
+    <sys:String x:Key="QoL.Weight.Desc">Deaktiviert — wird durch Windrose+ Pak-Mod gesteuert</sys:String>
     <sys:String x:Key="QoL.PointsPerLevel.Name">Punkte pro Level</sys:String>
     <sys:String x:Key="QoL.PointsPerLevel.Desc">Anzahl Skillpunkte die ein Spieler pro Level-Aufstieg erhält.</sys:String>
     <sys:String x:Key="QoL.Conflict.Title">Mod-Konflikte erkannt</sys:String>
     <sys:String x:Key="Mods.ConflictWarning">Diese Mod steht in Konflikt mit einem aktiven QoL-Multiplikator.</sys:String>
+
+    <!-- Self-Update (v1.7.0) -->
+    <sys:String x:Key="Update.SelfUpdate.Downloading">Update wird heruntergeladen…</sys:String>
+    <sys:String x:Key="Update.SelfUpdate.Preparing">Update wird vorbereitet…</sys:String>
+    <sys:String x:Key="Update.SelfUpdate.Restarting">Neustart…</sys:String>
+    <sys:String x:Key="Update.SelfUpdate.Error">Update fehlgeschlagen. Release-Seite wird geöffnet…</sys:String>
+    <sys:String x:Key="Update.SelfUpdate.PermissionDenied">Zugriff verweigert. Bitte manuell aktualisieren.</sys:String>
+    <sys:String x:Key="Update.SelfUpdate.Cancel">Abbrechen</sys:String>
+
+    <!-- Scheduler Settings (v1.7.0) -->
+    <sys:String x:Key="Settings.Group.Scheduler">Geplanter Neustart</sys:String>
+    <sys:String x:Key="Settings.Scheduler.Title">Täglicher Neustart</sys:String>
+    <sys:String x:Key="Settings.Scheduler.Enabled">Geplanten Neustart aktivieren</sys:String>
+    <sys:String x:Key="Settings.Scheduler.Hint">Der Server wird ordnungsgemäß gestoppt, optional ein Backup erstellt und neu gestartet. Kein Taskkill.</sys:String>
+    <sys:String x:Key="Scheduler.Time.Label">Neustartzeit (HH:MM)</sys:String>
+    <sys:String x:Key="Scheduler.AutoBackup.Label">Backup vor Neustart</sys:String>
+
+    <!-- Log & Automation group (v1.7.0) -->
+    <sys:String x:Key="Settings.Group.LogAutomation">Log &amp; Automatisierung</sys:String>
+    <sys:String x:Key="Settings.LogAutomation.CrashRestart.Title">Absturz &amp; Neustart</sys:String>
+    <sys:String x:Key="Settings.LogAutomation.Scheduled.Title">Geplanter Neustart</sys:String>
+    <sys:String x:Key="Settings.LogAutomation.Log.Title">Server-Log</sys:String>
+    <sys:String x:Key="Settings.LogAutomation.Log.Hint">Aktiviert das Live-Protokoll (stdout/stderr) im Server-Control-Bereich.</sys:String>
+
+    <!-- Server Control — automation summary (v1.7.0) -->
+    <sys:String x:Key="ServerControl.ActiveAutomation">Aktive Automatisierungsregeln</sys:String>
+    <sys:String x:Key="ServerControl.AutomationEditHint">Konfiguration unter Einstellungen → Log &amp; Automatisierung.</sys:String>
+    <sys:String x:Key="ServerControl.Summary.DailyRestart">Täglicher Neustart:</sys:String>
+    <sys:String x:Key="ServerControl.Summary.AutoRestartOnCrash">Automatischer Neustart bei Crash</sys:String>
+    <sys:String x:Key="ServerControl.Summary.RamOver">RAM &gt;</sys:String>
+    <sys:String x:Key="ServerControl.Summary.UptimeOver">Uptime &gt;</sys:String>
+    <sys:String x:Key="ServerControl.Summary.BackupOnRestart">Backup bei Neustart</sys:String>
+    <sys:String x:Key="ServerControl.Summary.EveryDay">täglich</sys:String>
+
+    <!-- Discord Notifications (v1.7.0) -->
+    <sys:String x:Key="Discord.Notify.Settings.Title">Benachrichtigungen</sys:String>
+    <sys:String x:Key="Discord.Notify.Crash">⚠️ Server abgestürzt um {0}</sys:String>
+    <sys:String x:Key="Discord.Notify.Crash.Toggle">Server-Absturz-Benachrichtigung</sys:String>
+    <sys:String x:Key="Discord.Notify.LastLogs">Letzte Logs</sys:String>
+    <sys:String x:Key="Discord.Notify.BackupDone">✅ Backup abgeschlossen: {0} ({1})</sys:String>
+    <sys:String x:Key="Discord.Notify.BackupDone.Toggle">Backup-abgeschlossen-Benachrichtigung</sys:String>
+    <sys:String x:Key="Discord.Notify.BackupFail">❌ Backup fehlgeschlagen: {0}</sys:String>
+    <sys:String x:Key="Discord.Notify.BackupFail.Toggle">Backup-fehlgeschlagen-Benachrichtigung</sys:String>
+    <sys:String x:Key="Discord.Notify.UpdateAvailable">🔄 Server-Update verfügbar</sys:String>
+    <sys:String x:Key="Discord.Notify.UpdateAvailable.Toggle">SteamCMD-Update-Benachrichtigung</sys:String>
+    <sys:String x:Key="Discord.Notify.RestartSoon">🔁 Geplanter Neustart in 5 Minuten</sys:String>
+    <sys:String x:Key="Discord.Notify.Restart.Toggle">Neustart-Warnung</sys:String>
+    <sys:String x:Key="Discord.Notify.PlayerJoined">🟢 {0} hat den Server betreten</sys:String>
+    <sys:String x:Key="Discord.Notify.PlayerLeft">🟠 {0} hat den Server verlassen</sys:String>
+    <sys:String x:Key="Discord.Notify.PlayerJoinLeave.Toggle">Spieler-Benachrichtigung (Betreten/Verlassen)</sys:String>
+
+    <!-- Nav -->
+    <sys:String x:Key="Nav.Logs">Logs</sys:String>
+
+    <!-- Server Log (v1.7) -->
+    <sys:String x:Key="ServerLog.Title">Server-Log</sys:String>
+    <sys:String x:Key="ServerLog.Subtitle">Live-Serverausgabe und Log-Dateien</sys:String>
+
+    <!-- Server Control v1.7 Neustart-Erweiterungen -->
+    <sys:String x:Key="ServerControl.UpdateBeforeRestart">Update vor Neustart installieren</sys:String>
+    <sys:String x:Key="ServerControl.BackupBeforeRestart">Backup vor Neustart erstellen</sys:String>
+    <sys:String x:Key="ServerControl.RestartOptions">Neustart-Optionen</sys:String>
+    <sys:String x:Key="ServerControl.BroadcastBeforeRestart">Broadcast vor Neustart senden</sys:String>
+    <sys:String x:Key="ServerControl.BroadcastMessage.Placeholder">Server wird in {0} Minuten neu gestartet...</sys:String>
+    <sys:String x:Key="ServerControl.BroadcastMessage.Hint">Broadcast-Nachricht wird vor Neustart per RCON gesendet</sys:String>
+
+    <!-- Skin -->
+    <sys:String x:Key="Settings.Skin.Title">Design</sys:String>
+    <sys:String x:Key="Settings.Skin.Hint">Farbschema der Anwendung wählen</sys:String>
+
+    <!-- Backup-Verbesserungen -->
+    <sys:String x:Key="Backups.Col.Automatic">Automatisch</sys:String>
+    <sys:String x:Key="Backups.Col.Manual">Manuell</sys:String>
+
+    <!-- Dashboard Charts (v1.7.0) -->
+    <sys:String x:Key="Dashboard.Charts.Title">Server-Gesundheit</sys:String>
+    <sys:String x:Key="Dashboard.Crash.MinutesAgo">Letzter Absturz: vor {0} Min.</sys:String>
+    <sys:String x:Key="Dashboard.Crash.HoursAgo">Letzter Absturz: vor {0} Std.</sys:String>
+    <sys:String x:Key="Dashboard.Crash.NoneRecent">Kein Absturz seit 7 Tagen</sys:String>
+
+    <!-- Backup Manager (v1.7.0) -->
+    <sys:String x:Key="Backup.Column.Date">Datum</sys:String>
+    <sys:String x:Key="Backup.Column.Size">Größe</sys:String>
+    <sys:String x:Key="Backup.Column.Origin">Quelle</sys:String>
+
+    <!-- Windrose+ Remote Host -->
+    <sys:String x:Key="Settings.WindrosePlus.Host.Title">Remote-Host</sys:String>
+    <sys:String x:Key="Settings.WindrosePlus.Host.Hint">Standard-Localhost-Verbindung für diesen Server überschreiben (z.B. http://192.168.1.100:18080)</sys:String>
 </ResourceDictionary>

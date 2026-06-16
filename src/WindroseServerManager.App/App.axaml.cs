@@ -43,6 +43,9 @@ public partial class App : Application
         var localization = Services.GetRequiredService<ILocalizationService>();
         localization.Initialize(settings.Current.Language);
 
+        var skins = Services.GetRequiredService<IAppSkinService>();
+        skins.Initialize(settings.Current.Skin);
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var main = Services.GetRequiredService<MainWindowViewModel>();
@@ -129,6 +132,13 @@ public partial class App : Application
         try
         {
             var server = Services.GetRequiredService<IServerProcessService>();
+
+            if (server.TryAttachToExistingProcess())
+            {
+                Log.Information("Auto-start: attached to existing server process for '{Name}'", entry.Name);
+                return;
+            }
+
             if (server.Status is ServerStatus.Running or ServerStatus.Starting)
             {
                 Log.Information("Auto-start: active server '{Name}' already running — skip", entry.Name);
@@ -171,11 +181,23 @@ public partial class App : Application
             Log.Information("Auto-start: launching non-active server '{Name}' via {Target}", entry.Name, target);
             var psi = new System.Diagnostics.ProcessStartInfo
             {
-                FileName = target,
                 WorkingDirectory = entry.InstallDir,
-                UseShellExecute = true,
             };
-            // WP_NOPAUSE tells the bat wrapper not to "pause" on errors — we're headless.
+
+            var ext = System.IO.Path.GetExtension(target)?.ToLowerInvariant();
+            if (ext == ".bat" || ext == ".cmd")
+            {
+                psi.FileName = "cmd.exe";
+                psi.Arguments = $"/c \"{target}\"";
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            }
+            else
+            {
+                psi.FileName = target;
+                psi.UseShellExecute = true;
+            }
             psi.EnvironmentVariables["WP_NOPAUSE"] = "1";
             System.Diagnostics.Process.Start(psi);
         }
@@ -225,6 +247,9 @@ public partial class App : Application
         s.AddSingleton<IConflictScannerService, ConflictScannerService>();
         s.AddSingleton<IMetricsService, MetricsService>();
         s.AddSingleton<IServerEventLog, ServerEventLog>();
+        s.AddSingleton<IAppSkinService, AppSkinService>();
+
+        s.AddHostedService<ServerWatchdogService>();
 
         // Discord Bot Services
         s.AddSingleton<DiscordSocketClient>(sp => {
@@ -248,10 +273,14 @@ public partial class App : Application
         s.AddSingleton<IUpdateCheckService, UpdateCheckService>();
         s.AddSingleton<IAutoStartService, AutoStartService>();
         s.AddSingleton<IAppUpdateService, AppUpdateService>();
+        s.AddSingleton<ISelfUpdateService, SelfUpdateService>();
+        s.AddSingleton<IServerMonitorService, ServerMonitorService>();
+        s.AddHostedService(sp => (ServerMonitorService)sp.GetRequiredService<IServerMonitorService>());
         s.AddHostedService<AppUpdateScheduler>();
         s.AddSingleton<IWindrosePlusUpdateService, WindrosePlusUpdateService>();
         s.AddHostedService<WindrosePlusUpdateScheduler>();
         s.AddHostedService<DiscordBotService>();
+        s.AddHostedService<IpcPipeServer>();
 
         s.AddSingleton<MainWindowViewModel>();
 
@@ -260,6 +289,7 @@ public partial class App : Application
         s.AddSingleton<InstallationViewModel>();
         s.AddTransient<InstallWizardViewModel>();
         s.AddSingleton<ServerControlViewModel>();
+        s.AddSingleton<ServerLogViewModel>();
         s.AddSingleton<ConfigurationViewModel>();
         s.AddSingleton<BackupsViewModel>();
         s.AddSingleton<ModsViewModel>();

@@ -15,6 +15,8 @@ public sealed record AppUpdateResult(
     string? LatestVersion,
     string? ReleaseUrl,
     string? DownloadUrl,
+    string? PortableZipUrl,
+    string? PortableZipDigest,
     string Message);
 
 public interface IAppUpdateService
@@ -23,4 +25,6 @@ public interface IAppUpdateService
     event Action<AppUpdateResult>? UpdateChecked;
 
     Task<AppUpdateResult> CheckAsync(CancellationToken ct = default);
+
+    Task<string?> DownloadUpdateAsync(string zipUrl, IProgress<int> progress, CancellationToken ct = default);
 }

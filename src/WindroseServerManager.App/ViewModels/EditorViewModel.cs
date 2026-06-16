@@ -162,7 +162,8 @@ public partial class EditorViewModel : ViewModelBase
     {
         foreach (var group in Categories)
             foreach (var entry in group.Entries)
-                entry.ResetCommand.Execute(null);
+                if (entry.IsEnabled)
+                    entry.ResetCommand.Execute(null);
     }
 
     private bool CanExecuteSave() => CanSave;
@@ -183,11 +184,15 @@ public partial class EditorViewModel : ViewModelBase
         var cfg = _api.ReadConfig(serverDir) ?? new WindrosePlusConfig();
         foreach (var group in Categories)
             foreach (var entry in group.Entries)
+            {
+                if (!entry.IsEnabled) continue;
                 GetSection(cfg, entry.Schema)[entry.Key] = entry.ToTypedValue();
+            }
 
         try
         {
             await _api.WriteConfigAsync(serverDir, cfg, CancellationToken.None);
+            await SyncWindrosePlusSettingsAsync(serverDir, cfg);
             _toasts.Success(Loc.Get("Editor.Saved"));
 
             if (_proc.Status == ServerStatus.Running)
@@ -224,6 +229,35 @@ public partial class EditorViewModel : ViewModelBase
             ShowRebuildStatus = false;
             RebuildStatusMessage = null;
             _toasts.Error(Loc.Get("Editor.Error.Save"));
+        }
+    }
+
+    private async Task SyncWindrosePlusSettingsAsync(string serverDir, WindrosePlusConfig cfg)
+    {
+        try
+        {
+            var normalizedKey = Path.GetFullPath(serverDir).TrimEnd('\\', '/');
+
+            string? rconPassword = null;
+            if (cfg.Rcon.TryGetValue("password", out var pwObj))
+                rconPassword = WindroseConfigValueHelper.TryReadString(pwObj);
+
+            await _settings.UpdateAsync(s =>
+            {
+                var portObj = cfg.Server.GetValueOrDefault("http_port");
+                if (WindroseConfigValueHelper.TryReadInt(portObj, out var port) && port > 0)
+                {
+                    s.WindrosePlusDashboardPortByServer[serverDir] = port;
+                    s.WindrosePlusDashboardPortByServer[normalizedKey] = port;
+                }
+
+                if (!string.IsNullOrWhiteSpace(rconPassword))
+                    s.WindrosePlusRconPasswordByServer[normalizedKey] = rconPassword;
+            }).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "SyncWindrosePlusSettingsAsync failed");
         }
     }
 

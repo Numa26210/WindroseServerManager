@@ -84,12 +84,25 @@ public partial class BackupsViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void OpenSelectedFolder()
+    {
+        if (Selected is null) return;
+        try
+        {
+            var dir = Path.GetDirectoryName(Selected.FullPath);
+            if (string.IsNullOrEmpty(dir)) return;
+            Process.Start(new ProcessStartInfo { FileName = dir, UseShellExecute = true });
+        }
+        catch (Exception ex) { _toasts.Error(ErrorMessageHelper.FriendlyMessage(ex)); }
+    }
+
+    [RelayCommand]
     private void Refresh()
     {
         Backups.Clear();
         try
         {
-            foreach (var b in _backup.ListBackups()) Backups.Add(b);
+            foreach (var b in _backup.ListBackups().OrderByDescending(b => b.CreatedUtc)) Backups.Add(b);
         }
         catch (Exception ex) { var msg = ErrorMessageHelper.FriendlyMessage(ex); ErrorMessage = msg; _toasts.Error(msg); }
     }

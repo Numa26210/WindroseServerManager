@@ -53,7 +53,10 @@
                         Command="{Binding RestoreCommand}"
                         IsEnabled="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <Button Classes="danger" Content="{DynamicResource Action.Delete}"
-                        Command="{Binding DeleteCommand}"
+                         Command="{Binding DeleteCommand}"
+                         IsEnabled="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <Button Content="{DynamicResource Action.OpenInExplorer}"
+                        Command="{Binding OpenSelectedFolderCommand}"
                         IsEnabled="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <Button Content="{DynamicResource Action.Refresh}" Command="{Binding RefreshCommand}" />
                 <Button Classes="subtle" Content="{DynamicResource Backups.OpenBackupDir}"
@@ -92,7 +95,7 @@
                                 <Border BorderBrush="{DynamicResource BrandNavyBorderBrush}"
                                         BorderThickness="0,0,0,1"
                                         Padding="16,12">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
 
                                         <!-- Archive Icon -->
                                         <TextBlock Grid.Column="0"
@@ -113,11 +116,10 @@
                                                        Text="{Binding CreatedUtc, Converter={x:Static vm:TimestampToDateTimeLocalConverter.Instance}}" />
                                         </StackPanel>
 
-                                        <!-- Auto Badge -->
+                                        <!-- Origin Badge -->
                                         <Border Grid.Column="2" Classes="badge"
-                                                Margin="12,0"
-                                                IsVisible="{Binding IsAutomatic}">
-                                            <TextBlock Text="{DynamicResource Backups.Col.Automatic}" />
+                                                Margin="12,0">
+                                            <TextBlock Text="{Binding IsAutomatic, Converter={x:Static vm:BackupTypeLabelConverter.Instance}}" />
                                         </Border>
 
                                         <!-- Size -->

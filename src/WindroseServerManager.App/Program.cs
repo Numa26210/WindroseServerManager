@@ -2,8 +2,10 @@ using Avalonia;
 using Serilog;
 using System;
 using System.IO;
+using System.IO.Pipes;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace WindroseServerManager.App;
@@ -25,6 +27,13 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        var cliCommand = ParseCliCommand(args);
+        if (cliCommand is not null)
+        {
+            RunCliAsync(cliCommand).GetAwaiter().GetResult();
+            return;
+        }
+
         foreach (var a in args)
         {
             if (string.Equals(a, "--tray", StringComparison.OrdinalIgnoreCase) ||
@@ -34,6 +43,8 @@ sealed class Program
                 break;
             }
         }
+
+        CleanupUpdateTemp();
 
         try
         {
@@ -76,6 +87,75 @@ sealed class Program
             })
             .WithInterFont()
             .LogToTrace();
+
+    private static string? ParseCliCommand(string[] args)
+    {
+        var cliArgs = new[] { "--start", "--stop", "--restart", "--backup", "--status" };
+        foreach (var a in args)
+        {
+            var match = cliArgs.FirstOrDefault(c =>
+                string.Equals(a, c, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+                return match.TrimStart('-');
+        }
+        return null;
+    }
+
+    private static async Task RunCliAsync(string command)
+    {
+        try
+        {
+            using var pipe = new NamedPipeClientStream(".", "WindroseServerManager",
+                PipeDirection.InOut, PipeOptions.None);
+
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(2));
+            await pipe.ConnectAsync(cts.Token).ConfigureAwait(false);
+
+            var cmd = JsonSerializer.Serialize(new { Command = command });
+            var cmdBytes = Encoding.UTF8.GetBytes(cmd);
+            await pipe.WriteAsync(cmdBytes, 0, cmdBytes.Length).ConfigureAwait(false);
+            await pipe.FlushAsync().ConfigureAwait(false);
+
+            using var ms = new MemoryStream();
+            var buffer = new byte[4096];
+            while (true)
+            {
+                var read = await pipe.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                if (read == 0) break;
+                ms.Write(buffer, 0, read);
+                if (ms.Length > 65536) break;
+            }
+
+            var response = Encoding.UTF8.GetString(ms.ToArray());
+            Console.WriteLine(response);
+        }
+        catch (TimeoutException)
+        {
+            if (string.Equals(command, "status", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(JsonSerializer.Serialize(new { running = false, status = "Stopped" }));
+            }
+            else
+            {
+                Console.WriteLine(JsonSerializer.Serialize(new { ok = false, error = "No running instance found." }));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(JsonSerializer.Serialize(new { ok = false, error = ex.Message }));
+        }
+    }
+
+    private static void CleanupUpdateTemp()
+    {
+        try
+        {
+            var dir = Path.Combine(Path.GetTempPath(), "WindroseUpdate");
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, recursive: true);
+        }
+        catch { }
+    }
 
     private static void ConfigureSerilog()
     {

@@ -4,72 +4,21 @@
              xmlns:svc="using:WindroseServerManager.App.Services"
              x:Class="WindroseServerManager.App.Views.Pages.ServerControlView"
              x:DataType="vm:ServerControlViewModel">
-    <UserControl.KeyBindings>
-        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveRestartScheduleCommand}" />
-    </UserControl.KeyBindings>
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
     <StackPanel Spacing="0">
         <TextBlock Classes="page-title" Text="{DynamicResource ServerControl.Title}" />
         <TextBlock Classes="caption muted" Text="{DynamicResource ServerControl.Subtitle}" Margin="0,4,0,20" />
 
-        <Border Classes="card" Margin="0,0,0,16">
-            <StackPanel Spacing="16">
-                <TextBlock Classes="section-header" Text="{DynamicResource ServerControl.ScheduledRestarts}" />
-                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <CheckBox Content="{DynamicResource ServerControl.Enabled}" IsChecked="{Binding ScheduledRestartEnabled}" VerticalAlignment="Center" />
-                    <TextBlock Classes="body" Text="{DynamicResource ServerControl.At}" VerticalAlignment="Center" />
-                    <TimePicker SelectedTime="{Binding DailyRestartTimeSpan}" MinuteIncrement="15" />
-                    <TextBlock Classes="body" Text="{DynamicResource ServerControl.ClockWarn}" VerticalAlignment="Center" />
-                    <NumericUpDown Value="{Binding RestartWarnMinutes}" Minimum="0" Maximum="60" FormatString="0" Width="110" />
-                    <TextBlock Classes="body" Text="{DynamicResource ServerControl.MinBefore}" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Spacing="6">
-                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.Weekdays}" />
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Mon}" IsChecked="{Binding RestartMon}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Tue}" IsChecked="{Binding RestartTue}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Wed}" IsChecked="{Binding RestartWed}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Thu}" IsChecked="{Binding RestartThu}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Fri}" IsChecked="{Binding RestartFri}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Sat}" IsChecked="{Binding RestartSat}" />
-                        <ToggleButton Classes="weekday-pill" Content="{DynamicResource Weekday.Sun}" IsChecked="{Binding RestartSun}" />
-                    </StackPanel>
-                </StackPanel>
-
-                <Border Classes="divider" />
-
-                <TextBlock Classes="section-header" Text="{DynamicResource ServerControl.AutoThresholds}" />
-                <StackPanel Spacing="8">
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <CheckBox Content="{DynamicResource ServerControl.RamOver}" IsChecked="{Binding AutoRestartOnHighRamEnabled}" VerticalAlignment="Center" />
-                        <NumericUpDown Value="{Binding AutoRestartRamThresholdPercent}" Minimum="10" Maximum="100" FormatString="0" Width="110"
-                                       IsEnabled="{Binding AutoRestartOnHighRamEnabled}" />
-                        <TextBlock Classes="body" Text="{DynamicResource ServerControl.RamOverSuffix}" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                        <CheckBox Content="{DynamicResource ServerControl.UptimeOver}" IsChecked="{Binding AutoRestartOnMaxUptimeEnabled}" VerticalAlignment="Center" />
-                        <NumericUpDown Value="{Binding AutoRestartMaxUptimeHours}" Minimum="1" Maximum="168" FormatString="0" Width="110"
-                                       IsEnabled="{Binding AutoRestartOnMaxUptimeEnabled}" />
-                        <TextBlock Classes="body" Text="{DynamicResource ServerControl.Hours}" VerticalAlignment="Center" />
-                    </StackPanel>
-                </StackPanel>
-
-                <Border Classes="divider" />
-
-                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <CheckBox Content="{DynamicResource ServerControl.BackupOnRestart}" IsChecked="{Binding BackupOnRestartEnabled}" VerticalAlignment="Center" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
-                            IsVisible="{Binding BackupOnRestartEnabled}">
-                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.BackupGraceDelay}" VerticalAlignment="Center" />
-                    <NumericUpDown Value="{Binding BackupGraceDelaySeconds}" Minimum="0" Maximum="30" FormatString="0" Width="100" />
-                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.BackupGraceDelaySuffix}" VerticalAlignment="Center" />
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Classes="primary" Content="{DynamicResource Action.Save}" Command="{Binding SaveRestartScheduleCommand}" />
-                </StackPanel>
+        <!-- Active automation summary (read-only) -->
+        <Border Classes="card" Margin="0,0,0,16" IsVisible="{Binding HasAutomationSummary}">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="section-header" Text="{DynamicResource ServerControl.ActiveAutomation}" />
+                <TextBlock Classes="body" Text="{Binding AutomationSummaryLine1}"
+                           IsVisible="{Binding AutomationSummaryLine1, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Classes="body" Text="{Binding AutomationSummaryLine2}"
+                           IsVisible="{Binding AutomationSummaryLine2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="{DynamicResource ServerControl.AutomationEditHint}" />
             </StackPanel>
         </Border>
 
@@ -116,42 +65,22 @@
             </Grid>
         </Border>
 
-        <Border Classes="card" MinHeight="420">
-            <Grid RowDefinitions="Auto,Auto,Auto,*">
-                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
-                    <TextBlock Grid.Column="0" Classes="section-header" Text="{DynamicResource ServerControl.LiveLog}" VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                        <TextBlock Classes="caption" Text="{DynamicResource ServerControl.Buffer}" VerticalAlignment="Center" />
-                        <ComboBox ItemsSource="{Binding LogBufferSizeOptions}" SelectedItem="{Binding LogBufferSize}" Width="90" />
-                        <Button Classes="subtle" Content="{DynamicResource ServerControl.LogFolder}" Command="{Binding OpenLogFolderCommand}" />
-                        <Button Classes="subtle" Content="{DynamicResource ServerControl.Export}" Command="{Binding ExportLogCommand}" />
-                        <Button Classes="subtle" Content="{DynamicResource ServerControl.Clear}" Command="{Binding ClearLogCommand}" />
-                    </StackPanel>
-                </Grid>
-                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                    <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
-                             PlaceholderText="{DynamicResource ServerControl.SearchLog}" />
-                    <TextBlock Grid.Column="1" Classes="caption" VerticalAlignment="Center" Margin="10,0,0,0"
-                               Text="{Binding FilteredLinesDisplay}" />
-                </Grid>
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6" Margin="0,0,0,8">
-                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.All}" IsChecked="{Binding IsAllFilter}" />
-                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.InfoPlus}" IsChecked="{Binding IsInfoPlusFilter}" />
-                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.WarningPlus}" IsChecked="{Binding IsWarningPlusFilter}" />
-                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.ErrorOnly}" IsChecked="{Binding IsErrorOnlyFilter}" />
+        <!-- Restart Enhancements -->
+        <Border Classes="card" Margin="0,0,0,16">
+            <StackPanel Spacing="10">
+                <TextBlock Classes="section-header" Text="{DynamicResource ServerControl.RestartOptions}" />
+                <CheckBox Content="{DynamicResource ServerControl.UpdateBeforeRestart}"
+                          IsChecked="{Binding RestartInstallUpdateBeforeStart}" />
+                <CheckBox Content="{DynamicResource ServerControl.BackupBeforeRestart}"
+                          IsChecked="{Binding RestartCreateBackupBeforeStart}" />
+                <CheckBox Content="{DynamicResource ServerControl.BroadcastBeforeRestart}"
+                          IsChecked="{Binding RestartBroadcastEnabled}" />
+                <StackPanel Spacing="4" IsVisible="{Binding RestartBroadcastEnabled}">
+                    <TextBox Text="{Binding RestartBroadcastMessage}"
+                             PlaceholderText="{Binding BroadcastMessagePlaceholder}" />
+                    <TextBlock Classes="caption" Text="{DynamicResource ServerControl.BroadcastMessage.Hint}" />
                 </StackPanel>
-                <ScrollViewer Grid.Row="3" svc:AutoScrollBehavior.IsEnabled="True">
-                    <ItemsControl ItemsSource="{Binding FilteredLog}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Classes="log-line"
-                                           Text="{Binding}"
-                                           Foreground="{Binding ., Converter={x:Static vm:LogLineToBrushConverter.Instance}}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-            </Grid>
+            </StackPanel>
         </Border>
     </StackPanel>
     </ScrollViewer>

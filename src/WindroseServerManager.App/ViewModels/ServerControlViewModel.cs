@@ -13,14 +13,6 @@ using WindroseServerManager.Core.Services;
 
 namespace WindroseServerManager.App.ViewModels;
 
-public enum LogLevelFilter
-{
-    All,
-    InfoPlus,
-    WarningPlus,
-    ErrorOnly
-}
-
 public partial class ServerControlViewModel : ViewModelBase, IDisposable
 {
     private readonly IServerProcessService _proc;
@@ -28,33 +20,20 @@ public partial class ServerControlViewModel : ViewModelBase, IDisposable
     private readonly IServerConfigService _config;
     private readonly IToastService _toasts;
     private readonly IServerEventLog _eventLog;
-    private readonly System.Timers.Timer _refreshTimer;
+    private readonly Avalonia.Threading.DispatcherTimer _refreshTimer;
 
     public ObservableCollection<ServerEvent> Events { get; } = new();
 
     [ObservableProperty] private ServerStatus _status;
     [ObservableProperty] private string _uptimeText = "—";
     [ObservableProperty] private string? _errorMessage;
-    [ObservableProperty] private bool _scheduledRestartEnabled;
-    [ObservableProperty] private string _dailyRestartTime = "04:00";
-    [ObservableProperty] private int _restartWarnMinutes = 5;
-    [ObservableProperty] private bool _backupOnRestartEnabled;
-    [ObservableProperty] private int _backupGraceDelaySeconds = 3;
-    [ObservableProperty] private bool _restartMon, _restartTue, _restartWed, _restartThu, _restartFri, _restartSat, _restartSun;
-
-    [ObservableProperty] private bool _autoRestartOnHighRamEnabled;
-    [ObservableProperty] private int _autoRestartRamThresholdPercent = 80;
-    [ObservableProperty] private bool _autoRestartOnMaxUptimeEnabled;
-    [ObservableProperty] private int _autoRestartMaxUptimeHours = 24;
     [ObservableProperty] private string? _inviteCode;
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private LogLevelFilter _currentLogFilter = LogLevelFilter.All;
-    [ObservableProperty] private string _searchQuery = string.Empty;
-    [ObservableProperty] private int _logBufferSize = 2000;
 
-    public int[] LogBufferSizeOptions { get; } = { 500, 2000, 10000 };
-
-    public string FilteredLinesDisplay => Loc.Format("ServerControl.LinesFormat", FilteredLog.Count);
+    [ObservableProperty] private bool _restartInstallUpdateBeforeStart;
+    [ObservableProperty] private bool _restartCreateBackupBeforeStart;
+    [ObservableProperty] private bool _restartBroadcastEnabled;
+    [ObservableProperty] private string _restartBroadcastMessage = string.Empty;
 
     public bool CanOpenServerDir => !string.IsNullOrWhiteSpace(_settings.ActiveServerDir)
                                     && Directory.Exists(_settings.ActiveServerDir);
@@ -68,224 +47,107 @@ public partial class ServerControlViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public TimeSpan DailyRestartTimeSpan
+    public bool HasAutomationSummary =>
+        !string.IsNullOrEmpty(AutomationSummaryLine1) || !string.IsNullOrEmpty(AutomationSummaryLine2);
+
+    public string AutomationSummaryLine1
     {
         get
         {
-            if (TimeSpan.TryParseExact(DailyRestartTime, @"hh\:mm", CultureInfo.InvariantCulture, out var ts))
-                return ts;
-            if (TimeSpan.TryParse(DailyRestartTime, CultureInfo.InvariantCulture, out ts))
-                return ts;
-            return TimeSpan.FromHours(4);
+            var c = _settings.Current;
+            var parts = new List<string>();
+            if (c.ScheduledRestartEnabled)
+            {
+                var dayNames = BuildDaySummary(c);
+                parts.Add($"{Loc.Get("ServerControl.Summary.DailyRestart")} {c.DailyRestartTime} — {dayNames}");
+            }
+            if (c.AutoRestartOnCrash)
+                parts.Add(Loc.Get("ServerControl.Summary.AutoRestartOnCrash"));
+            return parts.Count > 0 ? string.Join(" · ", parts) : string.Empty;
         }
-        set
+    }
+
+    public string AutomationSummaryLine2
+    {
+        get
         {
-            DailyRestartTime = value.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+            var c = _settings.Current;
+            var parts = new List<string>();
+            if (c.AutoRestartOnHighRamEnabled)
+                parts.Add($"{Loc.Get("ServerControl.Summary.RamOver")} {c.AutoRestartRamThresholdPercent}%");
+            if (c.AutoRestartOnMaxUptimeEnabled)
+                parts.Add($"{Loc.Get("ServerControl.Summary.UptimeOver")} {c.AutoRestartMaxUptimeHours}h");
+            if (c.BackupOnRestartEnabled)
+                parts.Add($"{Loc.Get("ServerControl.Summary.BackupOnRestart")} ({c.BackupGraceDelaySeconds}s grace)");
+            return parts.Count > 0 ? string.Join(" · ", parts) : string.Empty;
         }
     }
 
-    public ObservableCollection<string> Log { get; } = new();
-    public ObservableCollection<string> FilteredLog { get; } = new();
-
-    public bool IsAllFilter
+    private static string BuildDaySummary(AppSettings c)
     {
-        get => CurrentLogFilter == LogLevelFilter.All;
-        set { if (value) CurrentLogFilter = LogLevelFilter.All; }
-    }
-    public bool IsInfoPlusFilter
-    {
-        get => CurrentLogFilter == LogLevelFilter.InfoPlus;
-        set { if (value) CurrentLogFilter = LogLevelFilter.InfoPlus; }
-    }
-    public bool IsWarningPlusFilter
-    {
-        get => CurrentLogFilter == LogLevelFilter.WarningPlus;
-        set { if (value) CurrentLogFilter = LogLevelFilter.WarningPlus; }
-    }
-    public bool IsErrorOnlyFilter
-    {
-        get => CurrentLogFilter == LogLevelFilter.ErrorOnly;
-        set { if (value) CurrentLogFilter = LogLevelFilter.ErrorOnly; }
+        var days = c.RestartDays ?? new List<DayOfWeek>();
+        if (days.Count == 0) return Loc.Get("ServerControl.Summary.EveryDay");
+        var keys = new[] { "Weekday.Mon", "Weekday.Tue", "Weekday.Wed", "Weekday.Thu", "Weekday.Fri", "Weekday.Sat", "Weekday.Sun" };
+        var allDays = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday };
+        var names = new List<string>();
+        for (int i = 0; i < allDays.Length; i++)
+        {
+            if (days.Contains(allDays[i]))
+                names.Add(Loc.Get(keys[i]));
+        }
+        return string.Join(' ', names);
     }
 
     public ServerControlViewModel(IServerProcessService proc, IAppSettingsService settings, IServerConfigService config, IToastService toasts, IServerEventLog eventLog, ILocalizationService localization)
     {
-        FilteredLog.CollectionChanged += (_, _) => OnPropertyChanged(nameof(FilteredLinesDisplay));
-        localization.LanguageChanged += () => OnPropertyChanged(nameof(FilteredLinesDisplay));
-
         _proc = proc;
         _settings = settings;
         _config = config;
         _toasts = toasts;
         _eventLog = eventLog;
         _proc.StatusChanged += OnStatus;
-        _proc.LogAppended += OnLog;
         _eventLog.Appended += OnEventAppended;
         _status = _proc.Status;
 
-        foreach (var line in _proc.RecentLog) Log.Add(line.Text);
-        RebuildFilteredLog();
-
         _ = LoadEventsAsync();
 
-        ScheduledRestartEnabled = settings.Current.ScheduledRestartEnabled;
-        DailyRestartTime = settings.Current.DailyRestartTime;
-        RestartWarnMinutes = settings.Current.RestartWarnMinutes;
-        BackupOnRestartEnabled = settings.Current.BackupOnRestartEnabled;
-        BackupGraceDelaySeconds = settings.Current.BackupGraceDelaySeconds;
-        LogBufferSize = settings.Current.LogBufferSize > 0 ? settings.Current.LogBufferSize : 2000;
+        var c = settings.Current;
+        _restartInstallUpdateBeforeStart = c.RestartInstallUpdateBeforeStart;
+        _restartCreateBackupBeforeStart = c.RestartCreateBackupBeforeStart;
+        _restartBroadcastEnabled = c.RestartBroadcastEnabled;
+        _restartBroadcastMessage = c.RestartBroadcastMessage ?? string.Empty;
 
-        var days = settings.Current.RestartDays ?? new List<DayOfWeek>();
-        // Leere Liste = täglich → alle Tage aktiv.
-        var allDays = days.Count == 0;
-        RestartMon = allDays || days.Contains(DayOfWeek.Monday);
-        RestartTue = allDays || days.Contains(DayOfWeek.Tuesday);
-        RestartWed = allDays || days.Contains(DayOfWeek.Wednesday);
-        RestartThu = allDays || days.Contains(DayOfWeek.Thursday);
-        RestartFri = allDays || days.Contains(DayOfWeek.Friday);
-        RestartSat = allDays || days.Contains(DayOfWeek.Saturday);
-        RestartSun = allDays || days.Contains(DayOfWeek.Sunday);
-
-        AutoRestartOnHighRamEnabled = settings.Current.AutoRestartOnHighRamEnabled;
-        AutoRestartRamThresholdPercent = settings.Current.AutoRestartRamThresholdPercent;
-        AutoRestartOnMaxUptimeEnabled = settings.Current.AutoRestartOnMaxUptimeEnabled;
-        AutoRestartMaxUptimeHours = settings.Current.AutoRestartMaxUptimeHours;
+        _settings.Changed += OnSettingsChanged;
 
         _ = LoadInviteCodeAsync();
 
-        _refreshTimer = new System.Timers.Timer(5000);
-        _refreshTimer.Elapsed += async (_, _) => await LoadInviteCodeAsync();
+        _refreshTimer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _refreshTimer.Tick += async (_, _) => await LoadInviteCodeAsync();
         _refreshTimer.Start();
     }
 
-    partial void OnDailyRestartTimeChanged(string value)
+    partial void OnRestartBroadcastEnabledChanged(bool value) => SaveRestartScheduleAsync();
+    partial void OnRestartBroadcastMessageChanged(string value) => SaveRestartScheduleAsync();
+    partial void OnRestartInstallUpdateBeforeStartChanged(bool value) => SaveRestartScheduleAsync();
+    partial void OnRestartCreateBackupBeforeStartChanged(bool value) => SaveRestartScheduleAsync();
+
+    private async Task SaveRestartScheduleAsync()
     {
-        OnPropertyChanged(nameof(DailyRestartTimeSpan));
-    }
-
-    partial void OnCurrentLogFilterChanged(LogLevelFilter value)
-    {
-        OnPropertyChanged(nameof(IsAllFilter));
-        OnPropertyChanged(nameof(IsInfoPlusFilter));
-        OnPropertyChanged(nameof(IsWarningPlusFilter));
-        OnPropertyChanged(nameof(IsErrorOnlyFilter));
-        RebuildFilteredLog();
-    }
-
-    partial void OnSearchQueryChanged(string value) => RebuildFilteredLog();
-
-    partial void OnLogBufferSizeChanged(int value)
-    {
-        if (value <= 0) return;
-        _ = _settings.UpdateAsync(s => s.LogBufferSize = value);
-        TrimLog();
-    }
-
-    private void TrimLog()
-    {
-        var max = Math.Max(100, LogBufferSize);
-        while (Log.Count > max) Log.RemoveAt(0);
-        while (FilteredLog.Count > max) FilteredLog.RemoveAt(0);
-    }
-
-    private static LogLevelFilter ClassifyLine(string line)
-    {
-        if (string.IsNullOrEmpty(line)) return LogLevelFilter.InfoPlus;
-        if (line.Contains("[FEHLER]", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("!!!", StringComparison.Ordinal)
-            || line.Contains("Error!", StringComparison.Ordinal)
-            || System.Text.RegularExpressions.Regex.IsMatch(line, @"Log\w+:\s*Error:", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromSeconds(1)))
-            return LogLevelFilter.ErrorOnly;
-        if (line.Contains("Warning:", StringComparison.OrdinalIgnoreCase)
-            || line.Contains("[Warn]", StringComparison.OrdinalIgnoreCase))
-            return LogLevelFilter.WarningPlus;
-        return LogLevelFilter.InfoPlus;
-    }
-
-    private bool MatchesFilter(string line)
-    {
-        if (!string.IsNullOrWhiteSpace(SearchQuery)
-            && line.IndexOf(SearchQuery, StringComparison.OrdinalIgnoreCase) < 0)
-            return false;
-
-        var level = ClassifyLine(line);
-        return CurrentLogFilter switch
+        await _settings.UpdateAsync(s =>
         {
-            LogLevelFilter.All => true,
-            LogLevelFilter.InfoPlus => level == LogLevelFilter.InfoPlus || level == LogLevelFilter.WarningPlus || level == LogLevelFilter.ErrorOnly,
-            LogLevelFilter.WarningPlus => level == LogLevelFilter.WarningPlus || level == LogLevelFilter.ErrorOnly,
-            LogLevelFilter.ErrorOnly => level == LogLevelFilter.ErrorOnly,
-            _ => true,
-        };
+            s.RestartInstallUpdateBeforeStart = RestartInstallUpdateBeforeStart;
+            s.RestartCreateBackupBeforeStart = RestartCreateBackupBeforeStart;
+            s.RestartBroadcastEnabled = RestartBroadcastEnabled;
+            s.RestartBroadcastMessage = RestartBroadcastMessage ?? string.Empty;
+        });
     }
 
-    private void RebuildFilteredLog()
-    {
-        FilteredLog.Clear();
-        foreach (var line in Log)
-            if (MatchesFilter(line))
-                FilteredLog.Add(line);
-    }
-
-    private async Task LoadInviteCodeAsync()
-    {
-        try
-        {
-            var desc = await _config.LoadServerDescriptionAsync();
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                InviteCode = string.IsNullOrWhiteSpace(desc?.InviteCode) ? null : desc!.InviteCode;
-                OnPropertyChanged(nameof(CanOpenServerDir));
-                OnPropertyChanged(nameof(CanOpenServerDescription));
-            });
-        }
-        catch { }
-    }
-
-    [RelayCommand]
-    private async Task CopyInviteCodeAsync()
-    {
-        if (string.IsNullOrWhiteSpace(InviteCode)) return;
-        var top = Avalonia.Application.Current?.ApplicationLifetime
-            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime d ? d.MainWindow : null;
-        if (top?.Clipboard is null) return;
-        await top.Clipboard.SetTextAsync(InviteCode);
-        _toasts.Success(Loc.Format("Toast.InviteCopiedFormat", InviteCode));
-    }
-
-    [RelayCommand]
-    private void OpenServerDir()
-    {
-        var path = _settings.ActiveServerDir;
-        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path)) return;
-        try { Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true }); } catch { }
-    }
-
-    [RelayCommand]
-    private void OpenServerDescription()
-    {
-        var path = _config.GetServerDescriptionPath();
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
-        try { Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true }); } catch { }
-    }
+    public string BroadcastMessagePlaceholder => Loc.Get("ServerControl.BroadcastMessage.Placeholder");
 
     private void OnStatus(ServerStatus s) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
     {
         Status = s;
         UpdateUptime();
-    });
-
-    private void OnLog(ServerLogLine line) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-    {
-        var max = Math.Max(100, LogBufferSize);
-        Log.Add(line.Text);
-        if (Log.Count > max) Log.RemoveAt(0);
-
-        if (MatchesFilter(line.Text))
-        {
-            FilteredLog.Add(line.Text);
-            if (FilteredLog.Count > max) FilteredLog.RemoveAt(0);
-        }
     });
 
     private void UpdateUptime()
@@ -382,108 +244,54 @@ public partial class ServerControlViewModel : ViewModelBase, IDisposable
         }
     }
 
+    private async Task LoadInviteCodeAsync()
+    {
+        try
+        {
+            var desc = await _config.LoadServerDescriptionAsync();
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                InviteCode = string.IsNullOrWhiteSpace(desc?.InviteCode) ? null : desc!.InviteCode;
+                OnPropertyChanged(nameof(CanOpenServerDir));
+                OnPropertyChanged(nameof(CanOpenServerDescription));
+            });
+        }
+        catch { }
+    }
+
+    [RelayCommand]
+    private async Task CopyInviteCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InviteCode)) return;
+        var top = Avalonia.Application.Current?.ApplicationLifetime
+            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime d ? d.MainWindow : null;
+        if (top?.Clipboard is null) return;
+        await top.Clipboard.SetTextAsync(InviteCode);
+        _toasts.Success(Loc.Format("Toast.InviteCopiedFormat", InviteCode));
+    }
+
+    [RelayCommand]
+    private void OpenServerDir()
+    {
+        var path = _settings.ActiveServerDir;
+        if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path)) return;
+        try { Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true }); } catch { }
+    }
+
+    [RelayCommand]
+    private void OpenServerDescription()
+    {
+        var path = _config.GetServerDescriptionPath();
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+        try { Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true }); } catch { }
+    }
+
     [RelayCommand]
     private async Task ClearSessionHistoryAsync()
     {
         await _eventLog.ClearAsync().ConfigureAwait(false);
         Avalonia.Threading.Dispatcher.UIThread.Post(() => Events.Clear());
         _toasts.Info(Loc.Get("Toast.SessionHistoryCleared"));
-    }
-
-    [RelayCommand]
-    private void ClearLog()
-    {
-        Log.Clear();
-        FilteredLog.Clear();
-        _toasts.Info(Loc.Get("Toast.LogCleared"));
-    }
-
-    [RelayCommand]
-    private async Task ExportLogAsync()
-    {
-        var owner = GetOwnerWindow();
-        if (owner is null) return;
-
-        var ts = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss", CultureInfo.InvariantCulture);
-        var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-        {
-            Title = Loc.Get("ServerControl.Save.Title"),
-            SuggestedFileName = $"windrose-log-{ts}.txt",
-            DefaultExtension = "txt",
-            FileTypeChoices = new[]
-            {
-                new FilePickerFileType(Loc.Get("ServerControl.Save.TextFile")) { Patterns = new[] { "*.txt" } },
-            },
-        });
-        if (file is null) return;
-
-        try
-        {
-            var path = file.Path.LocalPath;
-            // Snapshot nehmen — Log kann währenddessen wachsen.
-            var snapshot = Log.ToArray();
-            await File.WriteAllLinesAsync(path, snapshot);
-            _toasts.Success(Loc.Format("Toast.LogExportedFormat", Path.GetFileName(path)));
-        }
-        catch (Exception ex)
-        {
-            _toasts.Error(Loc.Format("Toast.ExportFailedFormat", ErrorMessageHelper.FriendlyMessage(ex)));
-        }
-    }
-
-    [RelayCommand]
-    private void OpenLogFolder()
-    {
-        var installDir = _settings.ActiveServerDir;
-        if (string.IsNullOrWhiteSpace(installDir)) { _toasts.Warning(Loc.Get("Toast.InstallPathUnset")); return; }
-
-        var logDir = Path.Combine(installDir, "R5", "Saved", "Logs");
-        if (!Directory.Exists(logDir))
-        {
-            _toasts.Warning(Loc.Get("Toast.LogFolderMissing"));
-            return;
-        }
-        try { Process.Start(new ProcessStartInfo { FileName = logDir, UseShellExecute = true }); }
-        catch (Exception ex) { _toasts.Error(ErrorMessageHelper.FriendlyMessage(ex)); }
-    }
-
-    [RelayCommand]
-    private async Task SaveRestartScheduleAsync()
-    {
-        if (!System.Text.RegularExpressions.Regex.IsMatch(
-                DailyRestartTime ?? string.Empty,
-                @"^\d{2}:\d{2}$",
-                System.Text.RegularExpressions.RegexOptions.None,
-                TimeSpan.FromSeconds(1)))
-        {
-            _toasts.Warning(Loc.Get("Toast.TimeFormatInvalid"));
-            return;
-        }
-
-        var days = new List<DayOfWeek>();
-        if (RestartMon) days.Add(DayOfWeek.Monday);
-        if (RestartTue) days.Add(DayOfWeek.Tuesday);
-        if (RestartWed) days.Add(DayOfWeek.Wednesday);
-        if (RestartThu) days.Add(DayOfWeek.Thursday);
-        if (RestartFri) days.Add(DayOfWeek.Friday);
-        if (RestartSat) days.Add(DayOfWeek.Saturday);
-        if (RestartSun) days.Add(DayOfWeek.Sunday);
-
-        await _settings.UpdateAsync(s =>
-        {
-            s.ScheduledRestartEnabled = ScheduledRestartEnabled;
-            s.DailyRestartTime = DailyRestartTime ?? string.Empty;
-            s.RestartWarnMinutes = Math.Max(0, RestartWarnMinutes);
-            // 7 von 7 Tagen aktiv ist semantisch "täglich" → leere Liste speichern.
-            s.RestartDays = days.Count == 7 ? new List<DayOfWeek>() : days;
-            s.AutoRestartOnHighRamEnabled = AutoRestartOnHighRamEnabled;
-            s.AutoRestartRamThresholdPercent = Math.Clamp(AutoRestartRamThresholdPercent, 10, 100);
-            s.AutoRestartOnMaxUptimeEnabled = AutoRestartOnMaxUptimeEnabled;
-            s.AutoRestartMaxUptimeHours = Math.Max(1, AutoRestartMaxUptimeHours);
-            s.BackupOnRestartEnabled = BackupOnRestartEnabled;
-            s.BackupGraceDelaySeconds = Math.Clamp(BackupGraceDelaySeconds, 0, 30);
-        });
-        _toasts.Success(Loc.Get("Toast.AutomationSaved"));
     }
 
     private async Task LoadEventsAsync()
@@ -503,12 +311,22 @@ public partial class ServerControlViewModel : ViewModelBase, IDisposable
             while (Events.Count > 50) Events.RemoveAt(Events.Count - 1);
         });
 
+    private void OnSettingsChanged(AppSettings settings)
+    {
+        OnPropertyChanged(nameof(HasAutomationSummary));
+        OnPropertyChanged(nameof(AutomationSummaryLine1));
+        OnPropertyChanged(nameof(AutomationSummaryLine2));
+
+        RestartInstallUpdateBeforeStart = settings.RestartInstallUpdateBeforeStart;
+        RestartCreateBackupBeforeStart = settings.RestartCreateBackupBeforeStart;
+        RestartBroadcastEnabled = settings.RestartBroadcastEnabled;
+        RestartBroadcastMessage = settings.RestartBroadcastMessage ?? string.Empty;
+    }
+
     public void Dispose()
     {
         _refreshTimer.Stop();
-        _refreshTimer.Dispose();
         _proc.StatusChanged -= OnStatus;
-        _proc.LogAppended -= OnLog;
         _eventLog.Appended -= OnEventAppended;
     }
 }

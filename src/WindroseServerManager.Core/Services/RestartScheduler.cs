@@ -25,10 +25,10 @@ public sealed class RestartScheduler : BackgroundService
     private readonly IMetricsService _metrics;
     private readonly IServerEventLog _events;
     private readonly IBackupService _backupService;
-    private readonly INotificationService _notification;
 
-    private DateTime _lastTriggerDate = DateTime.MinValue;
-    private DateTime _lastWarnDate = DateTime.MinValue;
+    private bool _warningSent;
+    private bool _hasRestartedToday;
+    private DateTime _lastFlagResetDate = DateTime.MinValue;
     private DateTime _lastAutoRestartUtc = DateTime.MinValue;
 
     public event Action<RestartEvent>? RestartNotified;
@@ -39,8 +39,7 @@ public sealed class RestartScheduler : BackgroundService
         IServerProcessService server,
         IMetricsService metrics,
         IServerEventLog events,
-        IBackupService backupService,
-        INotificationService notification)
+        IBackupService backupService)
     {
         _logger = logger;
         _settings = settings;
@@ -48,7 +47,6 @@ public sealed class RestartScheduler : BackgroundService
         _metrics = metrics;
         _events = events;
         _backupService = backupService;
-        _notification = notification;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -60,34 +58,61 @@ public sealed class RestartScheduler : BackgroundService
             {
                 var now = DateTime.Now;
 
-                // Warn-Toast vor geplantem Restart.
-                if (ShouldWarnNow(now))
+                if (_lastFlagResetDate != now.Date)
                 {
-                    var mins = Math.Max(0, _settings.Current.RestartWarnMinutes);
-                    RestartNotified?.Invoke(new RestartEvent(
-                        RestartTrigger.ScheduledWarning,
-                        $"Geplanter Restart in {mins} Minuten."));
-                    _lastWarnDate = now.Date;
+                    _warningSent = false;
+                    _hasRestartedToday = false;
+                    _lastFlagResetDate = now.Date;
                 }
 
-                // Geplanter Restart zum Zeitpunkt.
-                if (ShouldTriggerScheduledNow(now))
+                var scheduledTriggered = false;
+
+                if (_settings.Current.ScheduledRestartEnabled
+                    && _server.Status == ServerStatus.Running
+                    && IsDayEnabled(now))
                 {
-                    await TriggerRestartAsync(RestartTrigger.ScheduledTime, "Geplanter Restart.", stoppingToken).ConfigureAwait(false);
-                    _lastTriggerDate = now.Date;
-                }
-                else
-                {
-                    // Schwellen-Checks — nur wenn Server läuft und nicht gerade nach Auto-Restart.
-                    if (_server.Status == ServerStatus.Running
-                        && (DateTime.UtcNow - _lastAutoRestartUtc).TotalMinutes >= 5)
+                    var timeStr = _settings.Current.DailyRestartTime;
+                    if (TimeSpan.TryParse(timeStr, out var target))
                     {
-                        var (threshold, reason) = await CheckAutoRestartThresholdsAsync(stoppingToken).ConfigureAwait(false);
-                        if (threshold is not null)
+                        var todayAt = now.Date + target;
+                        var timeUntilRestart = todayAt - now;
+                        var warnMins = _settings.Current.RestartWarnMinutes;
+
+                        if (!_warningSent
+                            && warnMins > 0
+                            && timeUntilRestart <= TimeSpan.FromMinutes(warnMins)
+                            && timeUntilRestart > TimeSpan.Zero)
                         {
-                            await TriggerRestartAsync(threshold.Value, reason, stoppingToken).ConfigureAwait(false);
-                            _lastAutoRestartUtc = DateTime.UtcNow;
+                            var mins = Math.Max(0, warnMins);
+                            var warnReason = $"Scheduled restart in {mins} minutes.";
+                            RestartNotified?.Invoke(new RestartEvent(RestartTrigger.ScheduledWarning, warnReason));
+
+                            var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
+                            await _events.AppendAsync(new ServerEvent(DateTime.UtcNow, ServerEventType.ScheduledRestart, warnReason, ServerName: serverName), stoppingToken).ConfigureAwait(false);
+
+                            _warningSent = true;
                         }
+
+                        if (!_hasRestartedToday
+                            && timeUntilRestart <= TimeSpan.Zero
+                            && timeUntilRestart >= TimeSpan.FromMinutes(-2))
+                        {
+                            await TriggerRestartAsync(RestartTrigger.ScheduledTime, "Scheduled restart.", stoppingToken).ConfigureAwait(false);
+                            _hasRestartedToday = true;
+                            scheduledTriggered = true;
+                        }
+                    }
+                }
+
+                if (!scheduledTriggered
+                    && _server.Status == ServerStatus.Running
+                    && (DateTime.UtcNow - _lastAutoRestartUtc).TotalMinutes >= 5)
+                {
+                    var (threshold, reason) = await CheckAutoRestartThresholdsAsync(stoppingToken).ConfigureAwait(false);
+                    if (threshold is not null)
+                    {
+                        await TriggerRestartAsync(threshold.Value, reason, stoppingToken).ConfigureAwait(false);
+                        _lastAutoRestartUtc = DateTime.UtcNow;
                     }
                 }
             }
@@ -110,41 +135,6 @@ public sealed class RestartScheduler : BackgroundService
         return days.Contains(now.DayOfWeek);
     }
 
-    private bool ShouldTriggerScheduledNow(DateTime now)
-    {
-        if (!_settings.Current.ScheduledRestartEnabled) return false;
-        if (_server.Status != ServerStatus.Running) return false;
-        if (!IsDayEnabled(now)) return false;
-
-        var timeStr = _settings.Current.DailyRestartTime;
-        if (!TimeSpan.TryParse(timeStr, out var target)) return false;
-
-        var todayAt = now.Date + target;
-        var windowEnd = todayAt.AddMinutes(2);
-        if (now < todayAt || now > windowEnd) return false;
-
-        return _lastTriggerDate.Date != now.Date;
-    }
-
-    private bool ShouldWarnNow(DateTime now)
-    {
-        if (!_settings.Current.ScheduledRestartEnabled) return false;
-        if (_server.Status != ServerStatus.Running) return false;
-        if (!IsDayEnabled(now)) return false;
-
-        var warnMins = _settings.Current.RestartWarnMinutes;
-        if (warnMins <= 0) return false;
-
-        var timeStr = _settings.Current.DailyRestartTime;
-        if (!TimeSpan.TryParse(timeStr, out var target)) return false;
-
-        var todayAt = now.Date + target;
-        var warnAt = todayAt.AddMinutes(-warnMins);
-        // 2-min Window ab warnAt; einmal pro Tag.
-        if (now < warnAt || now > warnAt.AddMinutes(2)) return false;
-        return _lastWarnDate.Date != now.Date;
-    }
-
     private async Task<(RestartTrigger? trigger, string reason)> CheckAutoRestartThresholdsAsync(CancellationToken ct)
     {
         var s = _settings.Current;
@@ -153,7 +143,7 @@ public sealed class RestartScheduler : BackgroundService
         {
             var uptime = DateTime.UtcNow - _server.StartedAtUtc.Value;
             if (uptime.TotalHours >= Math.Max(1, s.AutoRestartMaxUptimeHours))
-                return (RestartTrigger.MaxUptime, $"Uptime-Grenze erreicht ({(int)uptime.TotalHours}h).");
+                return (RestartTrigger.MaxUptime, $"Uptime limit reached ({(int)uptime.TotalHours}h).");
         }
 
         if (s.AutoRestartOnHighRamEnabled)
@@ -166,7 +156,7 @@ public sealed class RestartScheduler : BackgroundService
                 {
                     var pct = proc.RamBytes * 100.0 / host.RamTotalBytes;
                     if (pct >= Math.Max(10, s.AutoRestartRamThresholdPercent))
-                        return (RestartTrigger.HighRam, $"RAM-Grenze erreicht ({pct:F0} %).");
+                        return (RestartTrigger.HighRam, $"RAM limit reached ({pct:F0}%).");
                 }
             }
             catch (Exception ex)
@@ -183,21 +173,22 @@ public sealed class RestartScheduler : BackgroundService
         _logger.LogInformation("Restart trigger={Trigger} reason={Reason}", trigger, reason);
         RestartNotified?.Invoke(new RestartEvent(trigger, reason));
 
-        var eventType = trigger switch
-        {
-            RestartTrigger.ScheduledTime => ServerEventType.ScheduledRestart,
-            RestartTrigger.HighRam => ServerEventType.AutoRestartHighRam,
-            RestartTrigger.MaxUptime => ServerEventType.AutoRestartMaxUptime,
-            _ => ServerEventType.ScheduledRestart,
-        };
         var serverName = _settings.Current.Servers.FirstOrDefault(s => s.Id == _settings.Current.ActiveServerId)?.Name ?? "Server";
-        await _events.AppendAsync(new ServerEvent(DateTime.UtcNow, eventType, reason, ServerName: serverName), ct).ConfigureAwait(false);
+
+        if (trigger != RestartTrigger.ScheduledTime)
+        {
+            var eventType = trigger switch
+            {
+                RestartTrigger.HighRam => ServerEventType.AutoRestartHighRam,
+                RestartTrigger.MaxUptime => ServerEventType.AutoRestartMaxUptime,
+                _ => ServerEventType.ScheduledRestart,
+            };
+            await _events.AppendAsync(new ServerEvent(DateTime.UtcNow, eventType, reason, ServerName: serverName), ct).ConfigureAwait(false);
+        }
 
         try { await _server.StopAsync(ct).ConfigureAwait(false); }
         catch (Exception ex) { _logger.LogError(ex, "Scheduled restart: stop failed"); }
 
-        // Extra safety: wait for the process to be fully stopped (Stopped or Crashed).
-        // StopAsync already waits for exit, but the OS may still hold file handles open briefly.
         try
         {
             using var exitCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -210,7 +201,6 @@ public sealed class RestartScheduler : BackgroundService
         catch (OperationCanceledException)
         {
             _logger.LogWarning("Server process did not reach Stopped/Crashed state within 10s after stop — proceeding with backup anyway");
-            _notification.NotifyInfo("Server stop taking longer than expected. Proceeding with backup...");
         }
 
         if (_settings.Current.BackupOnRestartEnabled)
@@ -226,17 +216,14 @@ public sealed class RestartScheduler : BackgroundService
             try
             {
                 _logger.LogInformation("Creating backup before restart");
-                _notification.NotifyInfo("Creating backup...");
                 await _backupService.CreateBackupAsync(isAutomatic: true, ct).ConfigureAwait(false);
                 _logger.LogInformation("Backup completed successfully");
-                _notification.NotifySuccess("Backup completed successfully before restart");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Backup on restart failed, but proceeding with restart");
-                _notification.NotifyError($"Backup failed: {ex.Message}. Restart will proceed anyway.");
                 await _events.AppendAsync(
-                    new ServerEvent(DateTime.UtcNow, ServerEventType.BackupOnRestartFailed, $"Échec du backup avant restart : {ex.Message}", ServerName: serverName),
+                    new ServerEvent(DateTime.UtcNow, ServerEventType.BackupOnRestartFailed, $"Backup failed before restart: {ex.Message}", ServerName: serverName),
                     ct).ConfigureAwait(false);
             }
         }
@@ -246,15 +233,12 @@ public sealed class RestartScheduler : BackgroundService
 
         try
         {
-            _notification.NotifyInfo("Starting server...");
             await _server.StartAsync(ct).ConfigureAwait(false);
             _logger.LogInformation("Scheduled restart complete");
-            _notification.NotifySuccess("Server restarted successfully");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Scheduled restart: start failed");
-            _notification.NotifyError($"Server restart failed: {ex.Message}");
         }
     }
 }

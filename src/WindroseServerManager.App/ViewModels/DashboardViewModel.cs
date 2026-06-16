@@ -26,7 +26,9 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     private readonly IWindrosePlusService _wplus;
     private readonly IWindrosePlusApiService _wplusApi;
     private readonly IHttpClientFactory _httpFactory;
-    private readonly System.Timers.Timer _timer;
+    private readonly IServerMonitorService _monitor;
+    private readonly Avalonia.Threading.DispatcherTimer _timer;
+    private bool _refreshInProgress;
 
     [ObservableProperty] private ServerInstallInfo? _installInfo;
     [ObservableProperty] private ServerStatus _status;
@@ -54,6 +56,12 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     // Phase 10 — Health banner (HEALTH-01, HEALTH-02)
     [ObservableProperty] private bool _healthBannerVisible;
     [ObservableProperty] private HealthBannerViewModel? _healthBanner;
+
+    // Dashboard Charts (v1.7.0)
+    [ObservableProperty] private string _crashSummaryText = string.Empty;
+    [ObservableProperty] private int _autoRestartsToday;
+    [ObservableProperty] private string _cpuSparklinePoints = string.Empty;
+    [ObservableProperty] private string _ramSparklinePoints = string.Empty;
 
     private bool _healthBannerDismissedForSession;
     private bool _lastHealthCheckFailed;
@@ -161,7 +169,8 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
         ILocalizationService localization,
         IWindrosePlusService wplus,
         IWindrosePlusApiService wplusApi,
-        IHttpClientFactory httpFactory)
+        IHttpClientFactory httpFactory,
+        IServerMonitorService monitor)
     {
         _install = install;
         _proc = proc;
@@ -174,6 +183,7 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
         _wplus = wplus;
         _wplusApi = wplusApi;
         _httpFactory = httpFactory;
+        _monitor = monitor;
         _proc.StatusChanged += OnServerStatusChanged;
         _status = _proc.Status;
 
@@ -182,8 +192,8 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
 
         localization.LanguageChanged += RaiseLocalizedDisplayBindings;
 
-        _timer = new System.Timers.Timer(2000);
-        _timer.Elapsed += async (_, _) => await RefreshAsync();
+        _timer = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _timer.Tick += async (_, _) => await RefreshAsync();
         _timer.Start();
 
         _ = RefreshAsync();
@@ -264,6 +274,8 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task RefreshAsync(CancellationToken ct = default)
     {
+        if (_refreshInProgress) return;
+        _refreshInProgress = true;
         var serverDir = _settings.ActiveServerDir;
         try
         {
@@ -327,6 +339,12 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
 
             OnPropertyChanged(nameof(CanOpenServerDir));
             OnPropertyChanged(nameof(CanOpenServerDescription));
+
+            CrashSummaryText = _monitor.LastCrashText ?? string.Empty;
+            AutoRestartsToday = _monitor.AutoRestartsToday;
+            CpuSparklinePoints = BuildSparklinePoints(_monitor.CpuSamples, 0, 100);
+            RamSparklinePoints = BuildSparklinePoints(_monitor.RamSamples, 0,
+                _monitor.RamSamples.Count > 0 ? _monitor.RamSamples.Max(s => s.Value) * 1.2 : 1024);
 
             // Retrofit banner: show when active server has OptInState=NeverAsked and no WP active
             if (!string.IsNullOrWhiteSpace(serverDir))
@@ -442,6 +460,10 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
         catch (Exception ex)
         {
             Log.Debug(ex, "Dashboard refresh error (non-critical)");
+        }
+        finally
+        {
+            _refreshInProgress = false;
         }
     }
 
@@ -632,10 +654,28 @@ public partial class DashboardViewModel : ViewModelBase, IDisposable
     private static string FormatUptime(TimeSpan t) =>
         t.TotalHours >= 1 ? $"{(int)t.TotalHours}h {t.Minutes}m" : $"{t.Minutes}m {t.Seconds}s";
 
+    private static string BuildSparklinePoints(IReadOnlyList<MetricSample> samples, double minVal, double maxVal)
+    {
+        if (samples.Count < 2) return string.Empty;
+        var width = 200.0;
+        var height = 40.0;
+        var range = maxVal - minVal;
+        if (range <= 0) range = 1;
+
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < samples.Count; i++)
+        {
+            var x = (i / (double)(samples.Count - 1)) * width;
+            var y = height - ((samples[i].Value - minVal) / range) * height;
+            if (i > 0) sb.Append(' ');
+            sb.Append($"{x:0.#},{y:0.#}");
+        }
+        return sb.ToString();
+    }
+
     public void Dispose()
     {
         _timer.Stop();
-        _timer.Dispose();
         _proc.StatusChanged -= OnServerStatusChanged;
         if (RetrofitBanner is not null)
             RetrofitBanner.StateChanged -= OnRetrofitStateChanged;

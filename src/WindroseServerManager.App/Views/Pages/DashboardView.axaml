@@ -188,29 +188,29 @@
                         <TextBlock Classes="caption" Text="{DynamicResource Dashboard.ServerProcess}" />
                         <TextBlock Classes="body" Text="{Binding ProcCpuDisplay}" />
                         <TextBlock Classes="body" Text="{Binding ProcRamDisplay}" />
+                        <Canvas Width="200" Height="40"
+                                IsVisible="{Binding CpuSparklinePoints, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                            <Polyline Points="{Binding CpuSparklinePoints}"
+                                      Stroke="{DynamicResource BrandAmberBrush}" StrokeThickness="1.5"
+                                      Fill="Transparent" />
+                        </Canvas>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Classes="card">
-                    <StackPanel Spacing="12">
-                        <TextBlock Classes="caption" Text="{DynamicResource Dashboard.Host}" />
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Classes="body" Text="{Binding HostCpuDisplay}" />
-                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding HostCpu}" Height="6" Margin="0,4,0,0" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Classes="body" Text="{Binding HostRamDisplay}" />
-                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding HostRamPercent}" Height="6" Margin="0,4,0,0" />
-                            </StackPanel>
-                        </Grid>
-                        <StackPanel Spacing="4">
-                            <TextBlock Classes="body muted" Text="{Binding DiskDisplay}" />
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding DiskUsedPercent}" Height="6" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
             </Grid>
+
+            <!-- Crash Summary & Charts (v1.7.0) -->
+            <Border Classes="card" Margin="0,16,0,0"
+                    IsVisible="{Binding CrashSummaryText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <StackPanel Spacing="8">
+                    <TextBlock Classes="section-header" Text="{DynamicResource Dashboard.Charts.Title}" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock Classes="body" Text="{Binding CrashSummaryText}" />
+                        <TextBlock Classes="body muted"
+                                   Text="{Binding AutoRestartsToday, StringFormat='{}Auto-restarts today: {0}'}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <Border Classes="card" Margin="0,16,0,0">
                 <Grid ColumnDefinitions="*,Auto">

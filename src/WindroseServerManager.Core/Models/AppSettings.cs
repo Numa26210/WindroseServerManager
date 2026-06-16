@@ -118,4 +118,31 @@ public sealed class AppSettings
     /// The app can be fully quit via the tray menu "Quit" option. Default: false.
     /// </summary>
     public bool CloseToTray { get; set; } = false;
+
+    // Discord Notification Events
+    public bool DiscordNotifyCrash { get; set; } = true;
+    public bool DiscordNotifyBackup { get; set; } = true;
+    public bool DiscordNotifyBackupFail { get; set; } = true;
+    public bool DiscordNotifyUpdateAvailable { get; set; } = true;
+    public bool DiscordNotifyRestart { get; set; } = true;
+    public bool DiscordNotifyPlayerJoinLeave { get; set; } = false;
+
+    // Skin
+    public string Skin { get; set; } = "classic";
+
+    // Restart enhancements (v1.7)
+    public bool RestartInstallUpdateBeforeStart { get; set; } = false;
+    public bool RestartCreateBackupBeforeStart { get; set; } = false;
+    public bool RestartBroadcastEnabled { get; set; } = false;
+    public string RestartBroadcastMessage { get; set; } = "";
+
+    // Server watchdog desired-state (v1.7)
+    public Dictionary<string, bool> DesiredServerRunningByServer { get; set; } = new();
+
+    // CLI endpoint (v1.7)
+    public bool CliEndpointEnabled { get; set; } = true;
+    public string CliPipeName { get; set; } = "WindroseServerManager";
+
+    // Remote Windrose+ host (v1.7)
+    public Dictionary<string, string> WindrosePlusHostByServer { get; set; } = new();
 }

@@ -29,12 +29,18 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
     private readonly InteractionService _interactionService;
     private CancellationTokenSource? _cts;
     
+    private bool _isReady;
+    private ulong _channelId;
+
     // Log buffering state
     private readonly ConcurrentQueue<string> _logBuffer = new();
     private DateTime _lastLogFlushUtc = DateTime.UtcNow;
     private DateTime _lastPresenceUpdateUtc = DateTime.MinValue;
     private const int LogFlushIntervalSeconds = 3;
     private const int LogMessageMaxCharacters = 1900;
+
+    private HashSet<string> _knownPlayers = new(StringComparer.OrdinalIgnoreCase);
+    private DateTime _lastPlayerPollUtc = DateTime.MinValue;
 
     public DiscordBotService(
         ILogger<DiscordBotService> logger,
@@ -73,6 +79,16 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
             return;
         }
 
+        _channelId = settings.DiscordLogChannelId;
+        if (_channelId == 0)
+        {
+            _logger.LogError("Discord bot enabled but DiscordLogChannelId is 0! Configure a valid channel ID in settings.");
+        }
+        else
+        {
+            _logger.LogInformation("Discord bot configured for channel {ChannelId}", _channelId);
+        }
+
         try
         {
             _logger.LogInformation("Starting Discord bot service...");
@@ -86,7 +102,6 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
             _interactionService.Log += OnInteractionServiceLog;
             _client.InteractionCreated += OnInteractionCreated;
 
-            // Subscribe to server events instead of raw logs
             _serverProcess.StatusChanged += OnServerStatusChanged;
             _eventLog.Appended += OnServerEventAppended;
 
@@ -98,6 +113,9 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
 
             // Log flush loop
             _ = LogFlushLoopAsync(_cts.Token);
+
+            // Player join/leave detection
+            _ = PlayerTrackingLoopAsync(_cts.Token);
 
             // Keep the service running
             await Task.Delay(Timeout.Infinite, _cts.Token).ConfigureAwait(false);
@@ -142,6 +160,10 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
             // Update activity to current server status
             await UpdateBotActivityAsync().ConfigureAwait(false);
             _logger.LogInformation("Bot activity updated successfully");
+
+            _isReady = true;
+            _channelId = _settings.Current.DiscordLogChannelId;
+            _logger.LogInformation("Discord Bot is READY and serving channel {ChannelId}", _channelId);
         }
         catch (Exception ex)
         {
@@ -153,6 +175,7 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
     private async Task OnClientDisconnected(Exception arg)
     {
         _logger.LogWarning("Discord bot disconnected: {Message}", arg?.Message);
+        _isReady = false;
         // Reconnection is handled automatically by Discord.Net
     }
 
@@ -225,6 +248,7 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
 
     private void OnServerStatusChanged(ServerStatus status)
     {
+        _logger.LogInformation("Discord: server status changed to {Status}", status);
         try
         {
             _ = UpdateBotActivityAsync();
@@ -281,6 +305,95 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
         
         var serverLabel = !string.IsNullOrWhiteSpace(evt.ServerName) ? $"**[{evt.ServerName}]** " : "";
         _logBuffer.Enqueue(Loc.Format("Discord.Event.LogFormat", time, emoji, serverLabel, eventName, evt.Reason, durationStr));
+
+        if (evt.Type == ServerEventType.Crashed)
+            _ = SendNotificationAsync(evt);
+    }
+
+    private async Task SendNotificationAsync(ServerEvent evt)
+    {
+        try
+        {
+            var settings = _settings.Current;
+            if (!settings.EnableDiscordBot || settings.DiscordLogChannelId == 0)
+            {
+                _logger.LogWarning("Discord notification skipped: Bot not enabled or ChannelId is 0 (Event: {Type})", evt.Type);
+                return;
+            }
+            if (_client.ConnectionState != ConnectionState.Connected || !_isReady)
+            {
+                _logger.LogWarning("Discord notification skipped: Bot not ready (State={State}, IsReady={IsReady}, Event: {Type})",
+                    _client.ConnectionState, _isReady, evt.Type);
+                return;
+            }
+
+            var channel = _client.GetChannel(settings.DiscordLogChannelId) as ITextChannel;
+            if (channel is null) return;
+
+            var time = evt.TimestampUtc.ToLocalTime().ToString("HH:mm");
+            string? notificationMsg = null;
+
+            switch (evt.Type)
+            {
+                case ServerEventType.Crashed when settings.DiscordNotifyCrash:
+                    var embedBuilder = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithTitle(Loc.Format("Discord.Notify.Crash", time))
+                        .WithDescription(string.IsNullOrWhiteSpace(evt.Reason) ? null : $"```\n{evt.Reason}\n```");
+
+                    var logs = _serverProcess.RecentLog?.TakeLast(10).Select(l => l.Text).ToList();
+                    if (logs is { Count: > 0 })
+                    {
+                        var logText = string.Join("\n", logs);
+                        if (logText.Length > 1000) logText = logText[^1000..];
+                        embedBuilder.AddField(Loc.Get("Discord.Notify.LastLogs"), $"```text\n{logText}\n```");
+                    }
+
+                    notificationMsg = null;
+                    await channel.SendMessageAsync(embed: embedBuilder.Build()).ConfigureAwait(false);
+                    return;
+                case ServerEventType.BackupManual or ServerEventType.BackupAutomatic
+                    or ServerEventType.BackupOnRestartSuccess when settings.DiscordNotifyBackup:
+                    var sizeStr = !string.IsNullOrWhiteSpace(evt.ReasonArg) ? evt.ReasonArg : "";
+                    notificationMsg = Loc.Format("Discord.Notify.BackupDone", evt.Reason ?? sizeStr, "");
+                    break;
+                case ServerEventType.BackupOnRestartFailed when settings.DiscordNotifyBackupFail:
+                    notificationMsg = Loc.Format("Discord.Notify.BackupFail", evt.Reason);
+                    break;
+                case ServerEventType.ScheduledRestart when settings.DiscordNotifyRestart:
+                    notificationMsg = Loc.Get("Discord.Notify.RestartSoon");
+                    break;
+            }
+
+            if (notificationMsg is not null)
+            {
+                await SendLogMessageAsync(channel, notificationMsg).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send Discord notification for event type {EventType}", evt.Type);
+        }
+    }
+
+    private static string GetEventTypeName(ServerEventType type)
+    {
+        return type switch
+        {
+            ServerEventType.Started => Loc.Get("Event.Started"),
+            ServerEventType.Stopped => Loc.Get("Event.Stopped"),
+            ServerEventType.Crashed => Loc.Get("Event.Crashed"),
+            ServerEventType.ScheduledRestart => Loc.Get("Event.ScheduledRestart"),
+            ServerEventType.AutoRestartHighRam => Loc.Get("Event.AutoRestartRam"),
+            ServerEventType.AutoRestartMaxUptime => Loc.Get("Event.AutoRestartUptime"),
+            ServerEventType.BackupOnRestartSuccess => Loc.Get("Event.BackupOnRestartSuccess"),
+            ServerEventType.BackupOnRestartFailed => Loc.Get("Event.BackupOnRestartFailed"),
+            ServerEventType.BackupManual => Loc.Get("Event.BackupManual"),
+            ServerEventType.BackupAutomatic => Loc.Get("Event.BackupAutomatic"),
+            ServerEventType.BackupRestored => Loc.Get("Event.BackupRestored"),
+            ServerEventType.BackupDeleted => Loc.Get("Event.BackupDeleted"),
+            _ => type.ToString(),
+        };
     }
 
     private async Task<bool> UpdateBotActivityAsync()
@@ -318,6 +431,105 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
         {
             _logger.LogWarning(ex, "❌ Failed to update bot activity");
             return false;
+        }
+    }
+
+    private async Task PlayerTrackingLoopAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(15), ct).ConfigureAwait(false);
+
+                var settings = _settings.Current;
+                if (!settings.DiscordNotifyPlayerJoinLeave)
+                {
+                    _logger.LogWarning("Discord player tracking skipped: DiscordNotifyPlayerJoinLeave is disabled");
+                    continue;
+                }
+                if (!settings.EnableDiscordBot || settings.DiscordLogChannelId == 0)
+                {
+                    _logger.LogWarning("Discord player tracking skipped: Bot disabled or ChannelId is 0");
+                    continue;
+                }
+                if (_client.ConnectionState != ConnectionState.Connected || !_isReady)
+                {
+                    _logger.LogWarning("Discord player tracking skipped: Bot not ready (State={State}, IsReady={IsReady})",
+                        _client.ConnectionState, _isReady);
+                    continue;
+                }
+                if (_serverProcess.Status != ServerStatus.Running) continue;
+
+                var dir = _settings.ActiveServerDir;
+                if (string.IsNullOrWhiteSpace(dir)) continue;
+
+                var wplusApi = _serviceProvider.GetService(typeof(IWindrosePlusApiService)) as IWindrosePlusApiService;
+                if (wplusApi is null) continue;
+
+                try
+                {
+                    var status = await wplusApi.GetStatusAsync(dir, ct).ConfigureAwait(false);
+                    if (status is null) continue;
+
+                    var currentNames = status.Players.Select(p => p.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    var joined = currentNames.Except(_knownPlayers).ToList();
+                    var left = _knownPlayers.Except(currentNames).ToList();
+
+                    if (joined.Count > 0 || left.Count > 0)
+                        _logger.LogInformation("Discord player delta: +{Joined} joined, -{Left} left (total {Total})",
+                            joined.Count, left.Count, currentNames.Count);
+
+                    var channel = _client.GetChannel(settings.DiscordLogChannelId) as ITextChannel;
+                    if (channel is not null)
+                    {
+                        foreach (var name in joined)
+                        {
+                            try
+                            {
+                                var embed = new EmbedBuilder()
+                                    .WithColor(Color.Green)
+                                    .WithTitle(Loc.Format("Discord.Notify.PlayerJoined", name))
+                                    .WithTimestamp(DateTime.UtcNow)
+                                    .Build();
+                                await channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to send Discord player-joined notification for {Player}", name);
+                            }
+                        }
+                        foreach (var name in left)
+                        {
+                            try
+                            {
+                                var embed = new EmbedBuilder()
+                                    .WithColor(Color.Orange)
+                                    .WithTitle(Loc.Format("Discord.Notify.PlayerLeft", name))
+                                    .WithTimestamp(DateTime.UtcNow)
+                                    .Build();
+                                await channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to send Discord player-left notification for {Player}", name);
+                            }
+                        }
+                    }
+
+                    _knownPlayers = currentNames;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Player tracking poll failed");
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Player tracking loop error");
         }
     }
 
@@ -390,17 +602,18 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
         }
     }
 
+    private readonly ConcurrentQueue<Embed> _embedBuffer = new();
+
     private async Task SendLogMessageAsync(ITextChannel channel, string message)
     {
         try
         {
             await channel.SendMessageAsync(message).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("429"))
+        catch (Discord.Net.HttpException ex) when (ex.HttpCode == System.Net.HttpStatusCode.TooManyRequests)
         {
-            // Rate limited, wait a bit before retrying
-            _logger.LogWarning("Discord rate limit hit, waiting before retry");
-            await Task.Delay(1000).ConfigureAwait(false);
+            _logger.LogWarning("Discord rate limit hit, retrying in 2s");
+            await Task.Delay(2000).ConfigureAwait(false);
             await channel.SendMessageAsync(message).ConfigureAwait(false);
         }
         catch (Discord.Net.HttpException ex) when (ex.DiscordCode == (DiscordErrorCode)50001 || ex.DiscordCode == DiscordErrorCode.MissingPermissions)
@@ -410,6 +623,28 @@ public sealed class DiscordBotService : BackgroundService, IAsyncDisposable
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to send log message to Discord channel");
+        }
+    }
+
+    private async Task SendEmbedAsync(ITextChannel channel, Embed embed)
+    {
+        try
+        {
+            await channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+        catch (Discord.Net.HttpException ex) when (ex.HttpCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Discord embed rate limit hit, retrying in 2s");
+            await Task.Delay(2000).ConfigureAwait(false);
+            await channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+        catch (Discord.Net.HttpException ex) when (ex.DiscordCode == (DiscordErrorCode)50001 || ex.DiscordCode == DiscordErrorCode.MissingPermissions)
+        {
+            _logger.LogWarning("Discord bot Missing Permissions for channel {ChannelId}. Check Bot permissions.", channel.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send embed to Discord channel");
         }
     }
 

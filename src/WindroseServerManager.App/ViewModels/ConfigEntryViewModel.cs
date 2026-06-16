@@ -17,6 +17,7 @@ public partial class ConfigEntryViewModel : ObservableObject
 
     public string Category => Schema.Category;
     public string Key => Schema.Key;
+    public bool IsEnabled => Schema.IsEnabled;
 
     // Localized display
     public string DisplayName => Loc.Get(Schema.DescriptionKey + ".Name");

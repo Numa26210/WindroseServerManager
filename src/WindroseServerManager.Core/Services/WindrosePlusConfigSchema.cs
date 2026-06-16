@@ -9,7 +9,7 @@ namespace WindroseServerManager.Core.Services;
 public sealed record ConfigEntrySchema(
     string Category, string Key, string Type,
     double? Min, double? Max, object? Default, string DescriptionKey,
-    string? JsonSection = null);
+    string? JsonSection = null, bool IsEnabled = true);
 
 public static class WindrosePlusConfigSchema
 {
@@ -27,10 +27,10 @@ public static class WindrosePlusConfigSchema
         new("Farming", "crop_speed",      "float", 0.1, 100, 1.0, "QoL.CropSpeed",       "multipliers"),
         new("Farming", "cooking_speed",   "float", 0.1, 100, 1.0, "QoL.CookingSpeed",    "multipliers"),
         new("Farming", "harvest_yield",   "float", 0.1, 100, 1.0, "QoL.HarvestYield",    "multipliers"),
-        // Inventory (danger zone — pak mod conflicts)
-        new("Inventory", "stack_size",     "float", 0.1, 100, 1.0, "QoL.StackSize",       "multipliers"),
-        new("Inventory", "inventory_size", "float", 0.1, 100, 1.0, "QoL.InventorySize",   "multipliers"),
-        new("Inventory", "weight",         "float", 0.1, 100, 1.0, "QoL.Weight",          "multipliers"),
+        // Inventory (disabled — controlled by Windrose+ pak)
+        new("Inventory", "stack_size",     "float", 0.1, 100, 1.0, "QoL.StackSize",       "multipliers", IsEnabled: false),
+        new("Inventory", "inventory_size", "float", 0.1, 100, 1.0, "QoL.InventorySize",   "multipliers", IsEnabled: false),
+        new("Inventory", "weight",         "float", 0.1, 100, 1.0, "QoL.Weight",          "multipliers", IsEnabled: false),
         // Character
         new("Character", "points_per_level","float", 0.1, 100, 1.0, "QoL.PointsPerLevel", "multipliers"),
     };

@@ -13,13 +13,13 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
     private readonly IAppSettingsService _settings;
     private readonly ILogger<WindrosePlusApiService> _logger;
 
-    // Session cache: serverDir → (cookie value, expiry)
     private readonly Dictionary<string, (string Cookie, DateTime Expiry)> _sessionCache = new();
     private readonly SemaphoreSlim _sessionLock = new(1, 1);
 
-    // Cached HttpClient for login (needs custom handler: no redirect, no cookies).
-    // Disposing the handler is not needed for the app lifetime.
     private readonly HttpClient _loginClient;
+
+    private readonly Dictionary<string, int> _consecutiveFailures = new();
+    private readonly Dictionary<string, DateTime> _circuitOpenUntil = new();
 
     public WindrosePlusApiService(
         IHttpClientFactory httpFactory,
@@ -31,12 +31,68 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
         _logger = logger;
         _loginClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false })
         {
-            Timeout = TimeSpan.FromSeconds(5)
+            Timeout = TimeSpan.FromSeconds(3)
         };
     }
 
-    private int GetPort(string serverDir) =>
-        _settings.Current.WindrosePlusDashboardPortByServer.GetValueOrDefault(serverDir, 0);
+    private const int CircuitBreakerThreshold = 3;
+    private static readonly TimeSpan CircuitBreakerCooldown = TimeSpan.FromMinutes(1);
+
+    private bool IsCircuitOpen(string serverDir)
+    {
+        if (_circuitOpenUntil.TryGetValue(serverDir, out var until) && DateTime.UtcNow < until)
+            return true;
+        _circuitOpenUntil.Remove(serverDir);
+        return false;
+    }
+
+    private void RecordFailure(string serverDir)
+    {
+        var count = _consecutiveFailures.GetValueOrDefault(serverDir, 0) + 1;
+        _consecutiveFailures[serverDir] = count;
+        if (count >= CircuitBreakerThreshold)
+        {
+            _circuitOpenUntil[serverDir] = DateTime.UtcNow + CircuitBreakerCooldown;
+            _logger.LogDebug("Circuit breaker OPEN for {ServerDir} (cooldown {Cooldown}s)", serverDir, CircuitBreakerCooldown.TotalSeconds);
+        }
+    }
+
+    private void RecordSuccess(string serverDir)
+    {
+        _consecutiveFailures.Remove(serverDir);
+        _circuitOpenUntil.Remove(serverDir);
+    }
+
+    private int GetPort(string serverDir)
+    {
+        var normalized = Path.GetFullPath(serverDir).TrimEnd('\\', '/');
+        var port = _settings.Current.WindrosePlusDashboardPortByServer.GetValueOrDefault(normalized, 8780);
+        return port;
+    }
+
+    private string GetHost(string serverDir)
+    {
+        var normalized = Path.GetFullPath(serverDir).TrimEnd('\\', '/');
+        if (!_settings.Current.WindrosePlusHostByServer.TryGetValue(normalized, out var host) || string.IsNullOrWhiteSpace(host))
+            return "localhost";
+        host = host.Trim();
+        var idx = host.IndexOf("://", StringComparison.Ordinal);
+        if (idx >= 0)
+            host = host[(idx + 3)..];
+        var portIdx = host.LastIndexOf(':');
+        if (portIdx >= 0 && host.IndexOf('.') < portIdx)
+            host = host[..portIdx];
+        return host;
+    }
+
+    private string GetBaseUrl(string serverDir)
+    {
+        var port = GetPort(serverDir);
+        var host = GetHost(serverDir);
+        var url = port > 0 ? $"http://{host}:{port}" : $"http://{host}";
+        _logger.LogInformation("Windrose+ base URL for {ServerDir}: {Url} (host={Host}, port={Port})", serverDir, url, host, port);
+        return url;
+    }
 
     private string GetPassword(string serverDir)
     {
@@ -54,13 +110,13 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
     /// POST /login with form data to get a wp_session cookie.
     /// Returns the raw cookie value or null on failure.
     /// </summary>
-    private async Task<string?> LoginAsync(int port, string password, CancellationToken ct)
+    private async Task<string?> LoginAsync(string serverDir, int port, string password, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(password)) return null;
         try
         {
             var form = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("password", password) });
-            using var resp = await _loginClient.PostAsync($"http://localhost:{port}/login", form, ct).ConfigureAwait(false);
+            using var resp = await _loginClient.PostAsync($"{GetBaseUrl(serverDir)}/login", form, ct).ConfigureAwait(false);
 
             // Extract wp_session from Set-Cookie header (present on 302 redirect after successful login)
             if (resp.Headers.TryGetValues("Set-Cookie", out var cookies))
@@ -90,7 +146,7 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
             if (_sessionCache.TryGetValue(serverDir, out var cached) && DateTime.UtcNow < cached.Expiry)
                 return cached.Cookie;
 
-            var token = await LoginAsync(port, GetPassword(serverDir), ct).ConfigureAwait(false);
+            var token = await LoginAsync(serverDir, port, GetPassword(serverDir), ct).ConfigureAwait(false);
             if (token is not null)
                 _sessionCache[serverDir] = (token, DateTime.UtcNow.AddMinutes(50));
             return token;
@@ -150,7 +206,7 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
             using var client = _httpFactory.CreateClient();
             using var content = new StringContent(body, Encoding.UTF8, "application/json");
             using var response = await client
-                .PostAsync($"http://localhost:{port}/api/rcon", content, linked.Token)
+                .PostAsync($"{GetBaseUrl(serverDir)}/api/rcon", content, linked.Token)
                 .ConfigureAwait(false);
 
             var responseBody = await response.Content.ReadAsStringAsync(linked.Token).ConfigureAwait(false);
@@ -168,7 +224,7 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
 
             return responseBody;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex)
         {
             _logger.LogWarning(ex, "WindrosePlusApiService.RconAsync failed for port {Port}", port);
             return null;
@@ -187,20 +243,25 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
         var port = GetPort(serverDir);
         if (port <= 0) return null;
 
+        if (IsCircuitOpen(serverDir))
+            return null;
+
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        linked.CancelAfter(TimeSpan.FromSeconds(8));
+        linked.CancelAfter(TimeSpan.FromSeconds(5));
 
         try
         {
-            using var response = await AuthGetAsync(serverDir, $"http://localhost:{port}/api/status", linked.Token).ConfigureAwait(false);
+            using var response = await AuthGetAsync(serverDir, $"{GetBaseUrl(serverDir)}/api/status", linked.Token).ConfigureAwait(false);
             if (response is null) return null;
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync(linked.Token).ConfigureAwait(false);
+            RecordSuccess(serverDir);
             return ParseStatusResult(json);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex)
         {
-            _logger.LogWarning(ex, "WindrosePlusApiService.GetStatusAsync failed for port {Port}", port);
+            RecordFailure(serverDir);
+            _logger.LogDebug(ex, "GetStatusAsync failed for port {Port} (failures={Failures})", port, _consecutiveFailures.GetValueOrDefault(serverDir, 0));
             return null;
         }
     }
@@ -241,12 +302,15 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
         var port = GetPort(serverDir);
         if (port <= 0) return null;
 
+        if (IsCircuitOpen(serverDir))
+            return null;
+
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        linked.CancelAfter(TimeSpan.FromSeconds(8));
+        linked.CancelAfter(TimeSpan.FromSeconds(5));
 
         try
         {
-            using var response = await AuthGetAsync(serverDir, $"http://localhost:{port}/api/livemap", linked.Token).ConfigureAwait(false);
+            using var response = await AuthGetAsync(serverDir, $"{GetBaseUrl(serverDir)}/api/livemap", linked.Token).ConfigureAwait(false);
             if (response is null) return null;
             response.EnsureSuccessStatusCode();
 
@@ -261,11 +325,13 @@ public sealed class WindrosePlusApiService : IWindrosePlusApiService
                     players.Add(ParsePlayer(p));
             }
 
+            RecordSuccess(serverDir);
             return new WindrosePlusQueryResult(players);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        catch (Exception ex)
         {
-            _logger.LogWarning(ex, "WindrosePlusApiService.QueryAsync failed for port {Port}", port);
+            RecordFailure(serverDir);
+            _logger.LogDebug(ex, "QueryAsync failed for port {Port}", port);
             return null;
         }
     }

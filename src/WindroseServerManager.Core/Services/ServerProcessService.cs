@@ -54,7 +54,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
     {
         var dir = _settings.ActiveServerDir;
         if (string.IsNullOrWhiteSpace(dir))
-            return "Server-Installationspfad ist nicht gesetzt. Erst auf der Installationsseite installieren.";
+            return "Server install path is not set. Please install on the installation page first.";
         try
         {
             var info = BuildInstallInfo(dir);
@@ -63,7 +63,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         }
         catch (FileNotFoundException)
         {
-            return $"Server-Binary nicht gefunden in {dir}. Server zuerst installieren.";
+            return $"Server binary not found in {dir}. Please install the server first.";
         }
     }
 
@@ -82,7 +82,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             var err = ValidateCanStart();
             if (err is not null)
             {
-                AppendSystem($"[FEHLER] {err}");
+                AppendSystem($"[ERROR] {err}");
                 return false;
             }
 
@@ -162,16 +162,17 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "RunPreLaunchAsync failed — continuing with server start");
-                AppendSystem($"[WARNUNG] Windrose+ Pre-Launch fehlgeschlagen: {ex.Message}");
+                AppendSystem($"[WARNING] Windrose+ pre-launch failed: {ex.Message}");
             }
         }
         else
         {
             _logger.LogInformation("WindrosePlus disabled for this server — launching in vanilla mode");
-            AppendSystem("[Info] WindrosePlus deaktiviert — Start im Vanilla-Modus.");
+            AppendSystem("[Info] WindrosePlus disabled — launching in vanilla mode.");
         }
 
         // Phase 3: start process under lock
+        await ServerWatchdogService.SetDesiredRunningAsync(_settings, dir, true).ConfigureAwait(false);
         lock (_lock)
         {
             if (Status is ServerStatus.Running or ServerStatus.Starting)
@@ -213,7 +214,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             {
                 if (!_process.Start())
                 {
-                    AppendSystem("[FEHLER] Prozess konnte nicht gestartet werden.");
+                    AppendSystem("[ERROR] Process could not be started.");
                     CleanupProcess();
                     TransitionTo(ServerStatus.Stopped);
                     return false;
@@ -222,7 +223,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to start server process");
-                AppendSystem($"[FEHLER] {ex.Message}");
+                AppendSystem($"[ERROR] {ex.Message}");
                 CleanupProcess();
                 TransitionTo(ServerStatus.Stopped);
                 return false;
@@ -293,7 +294,9 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             TransitionTo(ServerStatus.Stopping);
         }
 
-        AppendSystem($"=== Stop (Windrose kennt keinen Soft-Shutdown — Prozess wird in {graceSeconds}s beendet)");
+        await ServerWatchdogService.SetDesiredRunningAsync(_settings, _startedServerDir, false).ConfigureAwait(false);
+
+        AppendSystem($"=== Stop (no graceful shutdown — process will be killed in {graceSeconds}s)");
         try
         {
             if (!p.HasExited)
@@ -321,7 +324,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
                 {
                     p.Kill(entireProcessTree: true);
                     await p.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
-                    AppendSystem("Prozess beendet (Kill).");
+                    AppendSystem("Process terminated (kill).");
                 }
                 catch (InvalidOperationException)
                 {
@@ -330,7 +333,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Kill failed");
-                    AppendSystem($"[FEHLER] Kill fehlgeschlagen: {ex.Message}");
+                    AppendSystem($"[ERROR] Kill failed: {ex.Message}");
                 }
             }
         }
@@ -351,7 +354,8 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             TransitionTo(ServerStatus.Stopping);
         }
 
-        AppendSystem("=== Hart-Kill angefordert");
+        AppendSystem("=== Hard-Kill requested");
+        await ServerWatchdogService.SetDesiredRunningAsync(_settings, _startedServerDir, false).ConfigureAwait(false);
         try
         {
             if (!p.HasExited)
@@ -363,7 +367,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         catch (Exception ex)
         {
             _logger.LogError(ex, "Kill failed");
-            AppendSystem($"[FEHLER] Kill fehlgeschlagen: {ex.Message}");
+            AppendSystem($"[ERROR] Kill failed: {ex.Message}");
         }
         finally
         {
@@ -456,7 +460,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
                     }
 
                     _logger.LogWarning("Killing orphan server process pid={Pid} name={Name} path={Path}", proc.Id, name, procPath);
-                    AppendSystem($"Orphan-Prozess beendet ({name}, pid={proc.Id}).");
+                    AppendSystem($"Orphan process terminated ({name}, pid={proc.Id}).");
                     proc.Kill(entireProcessTree: true);
                 }
                 catch (Exception ex)
@@ -492,7 +496,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
             TransitionTo(newStatus);
         }
 
-        AppendSystem($"=== Prozess beendet. ExitCode={code?.ToString() ?? "?"}");
+        AppendSystem($"=== Process exited. ExitCode={code?.ToString() ?? "?"}");
         _logger.LogInformation("Server exited: code={Code} previousStatus={Prev}", code, previous);
 
         var sessionDuration = startedAt is null ? (TimeSpan?)null : DateTime.UtcNow - startedAt.Value;
@@ -508,7 +512,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         // Auto-restart on crash if enabled and we weren't the one who stopped it
         if (previous != ServerStatus.Stopping && _settings.Current.AutoRestartOnCrash)
         {
-            AppendSystem("Auto-Restart aktiv, starte in 5s neu...");
+            AppendSystem("Auto-restart enabled, restarting in 5s...");
             _ = Task.Run(async () =>
             {
                 try
@@ -519,7 +523,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Auto-restart failed");
-                    AppendSystem($"[FEHLER] Auto-Restart fehlgeschlagen: {ex.Message}");
+                    AppendSystem($"[ERROR] Auto-restart failed: {ex.Message}");
                 }
             });
         }
@@ -591,7 +595,7 @@ public sealed class ServerProcessService : IServerProcessService, IAsyncDisposab
         desc.P2pProxyAddress = "127.0.0.1";
         await _config.SaveServerDescriptionToAsync(installDir, desc, ct).ConfigureAwait(false);
         _logger.LogInformation("Geheilt: leeres P2pProxyAddress in {Dir} auf 127.0.0.1 gesetzt (sonst crasht der gRPC-Init)", installDir);
-        AppendSystem("[Info] ServerDescription.json: P2pProxyAddress war leer — auf 127.0.0.1 gesetzt, damit der gRPC-Server starten kann.");
+        AppendSystem("[Info] ServerDescription.json: P2pProxyAddress was empty — set to 127.0.0.1 so the gRPC server can start.");
     }
 
     private static string CombineArgs(string a, string b) =>

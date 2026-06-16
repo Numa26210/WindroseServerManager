@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using Avalonia.Input.Platform;
@@ -36,6 +37,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IWindrosePlusService _wplus;
     private readonly IWindrosePlusApiService _wplusApi;
     private readonly IWindrosePlusUpdateService _wplusUpdate;
+    private readonly IAppSkinService _skins;
 
     [ObservableProperty] private bool _autoRestartOnCrash;
     [ObservableProperty] private int _gracefulShutdownSeconds;
@@ -95,7 +97,43 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty] private string _backupDirOverride = string.Empty;
     [ObservableProperty] private string _modsDirOverride = string.Empty;
+    [ObservableProperty] private string _windrosePlusHost = string.Empty;
     private bool _suppressDirOverrides;
+
+    // Scheduled Restart
+    [ObservableProperty] private bool _scheduledRestartEnabled;
+    [ObservableProperty] private string _dailyRestartTime = "04:00";
+    [ObservableProperty] private bool _backupOnRestartEnabled = true;
+    [ObservableProperty] private int _backupGraceDelaySeconds = 3;
+    [ObservableProperty] private int _restartWarnMinutes = 5;
+    [ObservableProperty] private bool _restartMon, _restartTue, _restartWed, _restartThu, _restartFri, _restartSat, _restartSun;
+
+    // Auto-restart thresholds
+    [ObservableProperty] private bool _autoRestartOnHighRamEnabled;
+    [ObservableProperty] private int _autoRestartRamThresholdPercent = 80;
+    [ObservableProperty] private bool _autoRestartOnMaxUptimeEnabled;
+    [ObservableProperty] private int _autoRestartMaxUptimeHours = 24;
+
+    public TimeSpan DailyRestartTimeSpan
+    {
+        get
+        {
+            if (TimeSpan.TryParseExact(DailyRestartTime, @"hh\:mm", CultureInfo.InvariantCulture, out var ts))
+                return ts;
+            if (TimeSpan.TryParse(DailyRestartTime, CultureInfo.InvariantCulture, out ts))
+                return ts;
+            return TimeSpan.FromHours(4);
+        }
+        set => DailyRestartTime = value.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+    }
+
+    // Discord Notifications
+    [ObservableProperty] private bool _discordNotifyCrash = true;
+    [ObservableProperty] private bool _discordNotifyBackup = true;
+    [ObservableProperty] private bool _discordNotifyBackupFail = true;
+    [ObservableProperty] private bool _discordNotifyUpdateAvailable = true;
+    [ObservableProperty] private bool _discordNotifyRestart = true;
+    [ObservableProperty] private bool _discordNotifyPlayerJoinLeave = false;
 
     public ObservableCollection<UpdateIntervalOption> WindrosePlusIntervalOptions { get; } = new();
     [ObservableProperty] private UpdateIntervalOption? _selectedWindrosePlusInterval;
@@ -105,6 +143,10 @@ public partial class SettingsViewModel : ViewModelBase
     public ObservableCollection<LanguageOption> LanguageOptions { get; } = new();
     [ObservableProperty] private LanguageOption? _selectedLanguageOption;
     private bool _suppressLanguageWrite;
+
+    public ObservableCollection<AppSkinDefinition> SkinOptions { get; } = new();
+    [ObservableProperty] private AppSkinDefinition? _selectedSkinOption;
+    private bool _suppressSkinWrite;
 
     private bool _suppressAutoStartWrite;
 
@@ -117,7 +159,8 @@ public partial class SettingsViewModel : ViewModelBase
         ILocalizationService localization,
         IWindrosePlusService wplus,
         IWindrosePlusApiService wplusApi,
-        IWindrosePlusUpdateService wplusUpdate)
+        IWindrosePlusUpdateService wplusUpdate,
+        IAppSkinService skins)
     {
         _settings = settings;
         _toasts = toasts;
@@ -128,6 +171,7 @@ public partial class SettingsViewModel : ViewModelBase
         _wplus = wplus;
         _wplusApi = wplusApi;
         _wplusUpdate = wplusUpdate;
+        _skins = skins;
 
         _suppressPersist = true;
         var c = settings.Current;
@@ -170,11 +214,47 @@ public partial class SettingsViewModel : ViewModelBase
         {
             _backupDirOverride = activeEntry.BackupDirOverride ?? string.Empty;
             _modsDirOverride = activeEntry.ModsDirOverride ?? string.Empty;
+            var normalized = Path.GetFullPath(activeEntry.InstallDir).TrimEnd('\\', '/');
+            _windrosePlusHost = c.WindrosePlusHostByServer.TryGetValue(normalized, out var host) ? host : string.Empty;
         }
         _suppressDirOverrides = false;
 
+        // Scheduled Restart
+        _scheduledRestartEnabled = c.ScheduledRestartEnabled;
+        _dailyRestartTime = c.DailyRestartTime;
+        _backupOnRestartEnabled = c.BackupOnRestartEnabled;
+        _backupGraceDelaySeconds = c.BackupGraceDelaySeconds;
+        _restartWarnMinutes = c.RestartWarnMinutes;
+
+        var days = c.RestartDays ?? new List<DayOfWeek>();
+        var allDays = days.Count == 0;
+        _suppressWeekdayWrite = true;
+        _restartMon = allDays || days.Contains(DayOfWeek.Monday);
+        _restartTue = allDays || days.Contains(DayOfWeek.Tuesday);
+        _restartWed = allDays || days.Contains(DayOfWeek.Wednesday);
+        _restartThu = allDays || days.Contains(DayOfWeek.Thursday);
+        _restartFri = allDays || days.Contains(DayOfWeek.Friday);
+        _restartSat = allDays || days.Contains(DayOfWeek.Saturday);
+        _restartSun = allDays || days.Contains(DayOfWeek.Sunday);
+        _suppressWeekdayWrite = false;
+
+        _autoRestartOnHighRamEnabled = c.AutoRestartOnHighRamEnabled;
+        _autoRestartRamThresholdPercent = c.AutoRestartRamThresholdPercent;
+        _autoRestartOnMaxUptimeEnabled = c.AutoRestartOnMaxUptimeEnabled;
+        _autoRestartMaxUptimeHours = c.AutoRestartMaxUptimeHours;
+
+        // Discord Notifications
+        _discordNotifyCrash = c.DiscordNotifyCrash;
+        _discordNotifyBackup = c.DiscordNotifyBackup;
+        _discordNotifyBackupFail = c.DiscordNotifyBackupFail;
+        _discordNotifyUpdateAvailable = c.DiscordNotifyUpdateAvailable;
+        _discordNotifyRestart = c.DiscordNotifyRestart;
+        _discordNotifyPlayerJoinLeave = c.DiscordNotifyPlayerJoinLeave;
+
         RebuildLanguageOptions();
         _localization.LanguageChanged += OnLanguageChanged;
+
+        RebuildSkinOptions();
 
         RebuildIntervalOptions();
         _wplusUpdate.UpdateChecked += OnWindrosePlusUpdateChecked;
@@ -346,6 +426,37 @@ public partial class SettingsViewModel : ViewModelBase
             "Language");
     }
 
+    private void RebuildSkinOptions()
+    {
+        _suppressSkinWrite = true;
+        try
+        {
+            SkinOptions.Clear();
+            foreach (var skin in _skins.AvailableSkins)
+                SkinOptions.Add(skin);
+
+            var current = _settings.Current.Skin ?? "classic";
+            SelectedSkinOption =
+                SkinOptions.FirstOrDefault(o => o.Key == current)
+                ?? SkinOptions.First();
+        }
+        finally
+        {
+            _suppressSkinWrite = false;
+        }
+    }
+
+    partial void OnSelectedSkinOptionChanged(AppSkinDefinition? value)
+    {
+        if (_suppressSkinWrite || value is null) return;
+        if (string.Equals(value.Key, _skins.CurrentSkinKey, StringComparison.Ordinal)) return;
+
+        _skins.SetSkin(value.Key);
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.Skin = value.Key),
+            "Skin");
+    }
+
     [RelayCommand]
     private Task CheckFirewallAsync() => CheckFirewallCoreAsync(showToast: true);
 
@@ -421,6 +532,7 @@ public partial class SettingsViewModel : ViewModelBase
     private void OnSettingsChanged(WindroseServerManager.Core.Models.AppSettings settings)
     {
         SafeFireAndForget(CheckFirewallCoreAsync(showToast: false), "CheckFirewall");
+        RebuildSkinOptions();
     }
 
     private string? ResolveServerBinary()
@@ -645,6 +757,148 @@ public partial class SettingsViewModel : ViewModelBase
             }),
             "ModsDirOverride");
         if (v is not null) _toasts.Success(Loc.Get("Toast.ModsDirUpdated"));
+    }
+
+    partial void OnWindrosePlusHostChanged(string value)
+    {
+        if (_suppressDirOverrides) return;
+        var dir = _settings.ActiveServerDir;
+        if (string.IsNullOrWhiteSpace(dir)) return;
+        var normalized = Path.GetFullPath(dir).TrimEnd('\\', '/');
+        var v = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        SafeFireAndForget(
+            _settings.UpdateAsync(s =>
+            {
+                if (v is not null)
+                    s.WindrosePlusHostByServer[normalized] = v;
+                else
+                    s.WindrosePlusHostByServer.Remove(normalized);
+            }),
+            "WindrosePlusHost");
+    }
+
+    partial void OnScheduledRestartEnabledChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.ScheduledRestartEnabled = value),
+            "ScheduledRestartEnabled");
+    }
+
+    partial void OnDailyRestartTimeChanged(string value)
+    {
+        if (_suppressPersist) return;
+        var v = value?.Trim() ?? "04:00";
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DailyRestartTime = v),
+            "DailyRestartTime");
+        OnPropertyChanged(nameof(DailyRestartTimeSpan));
+    }
+
+    private bool _suppressWeekdayWrite;
+
+    partial void OnRestartMonChanged(bool value) => PersistWeekdays();
+    partial void OnRestartTueChanged(bool value) => PersistWeekdays();
+    partial void OnRestartWedChanged(bool value) => PersistWeekdays();
+    partial void OnRestartThuChanged(bool value) => PersistWeekdays();
+    partial void OnRestartFriChanged(bool value) => PersistWeekdays();
+    partial void OnRestartSatChanged(bool value) => PersistWeekdays();
+    partial void OnRestartSunChanged(bool value) => PersistWeekdays();
+
+    private void PersistWeekdays()
+    {
+        if (_suppressPersist || _suppressWeekdayWrite) return;
+        var days = new List<DayOfWeek>();
+        if (RestartMon) days.Add(DayOfWeek.Monday);
+        if (RestartTue) days.Add(DayOfWeek.Tuesday);
+        if (RestartWed) days.Add(DayOfWeek.Wednesday);
+        if (RestartThu) days.Add(DayOfWeek.Thursday);
+        if (RestartFri) days.Add(DayOfWeek.Friday);
+        if (RestartSat) days.Add(DayOfWeek.Saturday);
+        if (RestartSun) days.Add(DayOfWeek.Sunday);
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.RestartDays = days.Count == 7 ? new List<DayOfWeek>() : days),
+            "RestartDays");
+    }
+
+    partial void OnAutoRestartOnHighRamEnabledChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.AutoRestartOnHighRamEnabled = value),
+            "AutoRestartOnHighRamEnabled");
+    }
+
+    partial void OnAutoRestartRamThresholdPercentChanged(int value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.AutoRestartRamThresholdPercent = Math.Clamp(value, 10, 100)),
+            "AutoRestartRamThresholdPercent");
+    }
+
+    partial void OnAutoRestartOnMaxUptimeEnabledChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.AutoRestartOnMaxUptimeEnabled = value),
+            "AutoRestartOnMaxUptimeEnabled");
+    }
+
+    partial void OnAutoRestartMaxUptimeHoursChanged(int value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.AutoRestartMaxUptimeHours = Math.Max(1, value)),
+            "AutoRestartMaxUptimeHours");
+    }
+
+    partial void OnDiscordNotifyCrashChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyCrash = value),
+            "DiscordNotifyCrash");
+    }
+
+    partial void OnDiscordNotifyBackupChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyBackup = value),
+            "DiscordNotifyBackup");
+    }
+
+    partial void OnDiscordNotifyBackupFailChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyBackupFail = value),
+            "DiscordNotifyBackupFail");
+    }
+
+    partial void OnDiscordNotifyUpdateAvailableChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyUpdateAvailable = value),
+            "DiscordNotifyUpdateAvailable");
+    }
+
+    partial void OnDiscordNotifyRestartChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyRestart = value),
+            "DiscordNotifyRestart");
+    }
+
+    partial void OnDiscordNotifyPlayerJoinLeaveChanged(bool value)
+    {
+        if (_suppressPersist) return;
+        SafeFireAndForget(
+            _settings.UpdateAsync(s => s.DiscordNotifyPlayerJoinLeave = value),
+            "DiscordNotifyPlayerJoinLeave");
     }
 
     [RelayCommand]

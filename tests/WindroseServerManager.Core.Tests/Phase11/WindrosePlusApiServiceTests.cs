@@ -36,7 +36,7 @@ public class WindrosePlusApiServiceTests : IDisposable
         string password = "")
     {
         var settings = new FakeApiSettings();
-        if (serverDir is not null && port > 0)
+        if (serverDir is not null)
         {
             settings.Current.WindrosePlusDashboardPortByServer[serverDir] = port;
             settings.Current.WindrosePlusRconPasswordByServer[serverDir] = password;
@@ -140,7 +140,7 @@ public class WindrosePlusApiServiceTests : IDisposable
     [Fact]
     public async Task RconAsync_PortZero_ReturnsNull()
     {
-        var svc = CreateService(); // no port registered → port 0
+        var svc = CreateService(serverDir: _tempDir, port: 0); // explicit port 0 in settings → port 0
         var result = await svc.RconAsync(_tempDir, "test", CancellationToken.None);
         Assert.Null(result);
     }
@@ -148,7 +148,7 @@ public class WindrosePlusApiServiceTests : IDisposable
     [Fact]
     public async Task GetStatusAsync_PortZero_ReturnsNull()
     {
-        var svc = CreateService();
+        var svc = CreateService(serverDir: _tempDir, port: 0); // explicit port 0 in settings → port 0
         var result = await svc.GetStatusAsync(_tempDir, CancellationToken.None);
         Assert.Null(result);
     }

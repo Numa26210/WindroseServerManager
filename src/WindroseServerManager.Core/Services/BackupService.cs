@@ -92,7 +92,8 @@ public sealed class BackupService : IBackupService
             ReasonKey: "Event.Reason.BackupCreated",
             ReasonArg: fileName));
 
-        return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, isAutomatic);
+        return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, isAutomatic,
+            isAutomatic ? BackupOrigin.Auto : BackupOrigin.Manual);
     }
 
     public async Task<BackupInfo?> CreatePreLaunchBackupAsync(CancellationToken ct = default)
@@ -133,7 +134,14 @@ public sealed class BackupService : IBackupService
 
         var info = new FileInfo(fullPath);
         _logger.LogInformation("{Prefix} backup created: {Size:F1} MB", prefix.TrimEnd('-'), info.Length / 1048576.0);
-        return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, true);
+        var origin = prefix switch
+        {
+            _ when prefix == PreLaunchPrefix => BackupOrigin.PreLaunch,
+            _ when prefix == PreConfigPrefix => BackupOrigin.PreConfig,
+            _ when prefix == "pre-restart-" => BackupOrigin.PreRestart,
+            _ => BackupOrigin.Auto,
+        };
+        return new BackupInfo(fileName, fullPath, info.CreationTimeUtc, info.Length, true, origin);
     }
 
     public IEnumerable<BackupInfo> ListBackups()
@@ -144,8 +152,18 @@ public sealed class BackupService : IBackupService
             var fi = new FileInfo(path);
             var name = fi.Name;
             var isAuto = name.StartsWith(AutoPrefix, StringComparison.OrdinalIgnoreCase);
-            yield return new BackupInfo(name, fi.FullName, fi.CreationTimeUtc, fi.Length, isAuto);
+            var origin = DetermineOrigin(name);
+            yield return new BackupInfo(name, fi.FullName, fi.CreationTimeUtc, fi.Length, isAuto, origin);
         }
+    }
+
+    private static BackupOrigin DetermineOrigin(string fileName)
+    {
+        if (fileName.StartsWith(AutoPrefix, StringComparison.OrdinalIgnoreCase)) return BackupOrigin.Auto;
+        if (fileName.StartsWith(PreLaunchPrefix, StringComparison.OrdinalIgnoreCase)) return BackupOrigin.PreLaunch;
+        if (fileName.StartsWith(PreConfigPrefix, StringComparison.OrdinalIgnoreCase)) return BackupOrigin.PreConfig;
+        if (fileName.StartsWith("pre-restart-", StringComparison.OrdinalIgnoreCase)) return BackupOrigin.PreRestart;
+        return BackupOrigin.Manual;
     }
 
     public void DeleteBackup(string fileName)

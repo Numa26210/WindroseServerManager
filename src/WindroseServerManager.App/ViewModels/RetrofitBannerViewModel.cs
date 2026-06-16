@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -27,16 +28,8 @@ public partial class RetrofitBannerViewModel : ViewModelBase, IWindrosePlusOptIn
     [ObservableProperty] private string _currentPhase = string.Empty;
     [ObservableProperty] private string? _errorMessage;
 
-    /// <summary>
-    /// True when opt-in is active but the Steam-ID field is still empty.
-    /// Drives the required-field caption in WindrosePlusOptInControl.
-    /// </summary>
     public bool IsSteamIdMissing => IsOptingIn && string.IsNullOrWhiteSpace(AdminSteamId);
 
-    /// <summary>
-    /// Raised after opt-out (Dismiss) or install completion so DashboardViewModel
-    /// can re-evaluate banner visibility without waiting for the next timer tick.
-    /// </summary>
     public event Action? StateChanged;
 
     public RetrofitBannerViewModel(
@@ -51,8 +44,43 @@ public partial class RetrofitBannerViewModel : ViewModelBase, IWindrosePlusOptIn
         _wplusApi = wplusApi;
         _settings = settings;
         _toasts = toasts;
-        RconPassword = RconPasswordGenerator.Generate(24);
-        DashboardPort = FreePortProbe.FindFreePort();
+        InitializeExistingValues();
+    }
+
+    private void InitializeExistingValues()
+    {
+        var port = 0;
+        var password = (string?)null;
+
+        var config = _wplusApi.ReadConfig(ServerInstallDir);
+        if (config is not null)
+        {
+            if (config.Server.TryGetValue("http_port", out var portObj))
+            {
+                if (WindroseConfigValueHelper.TryReadInt(portObj, out var p))
+                    port = p;
+            }
+            if (config.Rcon.TryGetValue("password", out var pwObj))
+            {
+                password = WindroseConfigValueHelper.TryReadString(pwObj);
+            }
+        }
+
+        var dir = ServerInstallDir;
+        if (port == 0)
+            port = _settings.Current.WindrosePlusDashboardPortByServer.GetValueOrDefault(dir, 0);
+        if (string.IsNullOrWhiteSpace(password))
+            password = _settings.Current.WindrosePlusRconPasswordByServer.GetValueOrDefault(dir, string.Empty);
+
+        if (port == 0) port = FreePortProbe.FindFreePort();
+        if (string.IsNullOrWhiteSpace(password)) password = RconPasswordGenerator.Generate(24);
+
+        DashboardPort = port;
+        RconPassword = password;
+
+        var steamId = _settings.Current.WindrosePlusAdminSteamIdByServer.GetValueOrDefault(dir, string.Empty);
+        if (!string.IsNullOrWhiteSpace(steamId))
+            AdminSteamId = steamId;
     }
 
     partial void OnIsOptingInChanged(bool value)

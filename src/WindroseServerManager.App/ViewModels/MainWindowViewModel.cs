@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WindroseServerManager.App.Services;
 using WindroseServerManager.Core.Models;
@@ -45,6 +46,12 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _updateBannerMessage = string.Empty;
     private string? _pendingLatestVersion;
     private string? _pendingReleaseUrl;
+    private string? _pendingDownloadUrl;
+    private string? _pendingPortableZipUrl;
+    private CancellationTokenSource? _downloadCts;
+
+    [ObservableProperty] private bool _isDownloadingUpdate;
+    [ObservableProperty] private int _updateDownloadProgress;
 
     public MainWindowViewModel(
         INavigationService nav,
@@ -59,7 +66,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Toasts = toasts;
         _settings = settings;
         _logger = logger;
-        _nav.Navigated += vm => CurrentPage = vm;
+        _nav.Navigated += OnNavigated;
 
         restartScheduler.RestartNotified += OnRestartNotified;
 
@@ -68,6 +75,7 @@ public partial class MainWindowViewModel : ViewModelBase
             new() { TitleKey = "Nav.Dashboard", Icon = "\uE80F", VmType = typeof(DashboardViewModel) },
             new() { TitleKey = "Nav.Server", Icon = "\uE896", VmType = typeof(InstallationViewModel) },
             new() { TitleKey = "Nav.ServerControl", Icon = "\uE756", VmType = typeof(ServerControlViewModel) },
+            new() { TitleKey = "Nav.Logs", Icon = "\uE8A5", VmType = typeof(ServerLogViewModel) },
             new() { TitleKey = "Nav.Configuration", Icon = "\uE9E9", VmType = typeof(ConfigurationViewModel) },
             // Phase 11 — WindrosePlus Feature Views
             new() { TitleKey = "Nav.Players",  Icon = "\uE716", VmType = typeof(PlayersViewModel) },
@@ -106,6 +114,34 @@ public partial class MainWindowViewModel : ViewModelBase
         // Bei Einstellungsänderungen (z.B. Server hinzugefügt/entfernt) neu synchronisieren
         settings.Changed += current =>
             Avalonia.Threading.Dispatcher.UIThread.Post(() => SyncServersFromSettings(current));
+    }
+
+    private void OnNavigated(ViewModelBase vm)
+    {
+        CurrentPage = vm;
+        SyncSelectionToPage(vm);
+    }
+
+    private void SyncSelectionToPage(ViewModelBase vm)
+    {
+        var mainMatch = NavItems.FirstOrDefault(n => n.VmType == vm.GetType());
+        if (mainMatch is not null)
+        {
+            if (_suppressSelectionSync) return;
+            _suppressSelectionSync = true;
+            try { SelectedMainItem = mainMatch; SelectedFooterItem = null; }
+            finally { _suppressSelectionSync = false; }
+            return;
+        }
+
+        var footerMatch = FooterItems.FirstOrDefault(n => n.VmType == vm.GetType());
+        if (footerMatch is not null)
+        {
+            if (_suppressSelectionSync) return;
+            _suppressSelectionSync = true;
+            try { SelectedFooterItem = footerMatch; SelectedMainItem = null; }
+            finally { _suppressSelectionSync = false; }
+        }
     }
 
     partial void OnSelectedMainItemChanged(NavItem? value)
@@ -205,15 +241,95 @@ public partial class MainWindowViewModel : ViewModelBase
 
             _pendingLatestVersion = result.LatestVersion;
             _pendingReleaseUrl = result.ReleaseUrl ?? result.DownloadUrl;
+            _pendingDownloadUrl = result.DownloadUrl;
+            _pendingPortableZipUrl = result.PortableZipUrl;
             UpdateBannerMessage = Loc.Format("Update.Banner.AvailableFormat", result.LatestVersion);
             IsUpdateBannerVisible = true;
         });
     }
 
     [RelayCommand]
-    private void DownloadUpdate()
+    private async Task DownloadUpdateAsync()
     {
-        var url = _pendingReleaseUrl;
+        if (IsDownloadingUpdate) return;
+
+        var portableUrl = _pendingPortableZipUrl;
+        if (!string.IsNullOrWhiteSpace(portableUrl))
+        {
+            IsDownloadingUpdate = true;
+            UpdateDownloadProgress = 0;
+            _downloadCts = new CancellationTokenSource();
+
+            try
+            {
+                var updateService = App.Services.GetRequiredService<IAppUpdateService>();
+                var progress = new Progress<int>(p => UpdateDownloadProgress = p);
+
+                var zipPath = await updateService.DownloadUpdateAsync(portableUrl, progress, _downloadCts.Token).ConfigureAwait(true);
+
+                if (zipPath is null)
+                {
+                    Toasts.Error(Loc.Get("Update.SelfUpdate.Error"));
+                    FallbackOpenBrowser();
+                    return;
+                }
+
+                try
+                {
+                    var selfUpdate = App.Services.GetRequiredService<ISelfUpdateService>();
+                    await selfUpdate.PrepareAndLaunchUpdaterAsync(zipPath).ConfigureAwait(true);
+                    Toasts.Info(Loc.Get("Update.SelfUpdate.Restarting"));
+                    await Task.Delay(1000).ConfigureAwait(true);
+
+                    if (Avalonia.Application.Current?.ApplicationLifetime
+                        is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                        desktop.Shutdown();
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Toasts.Error(Loc.Get("Update.SelfUpdate.PermissionDenied"));
+                    FallbackOpenBrowser();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Self-update failed");
+                    Toasts.Error(Loc.Get("Update.SelfUpdate.Error"));
+                    FallbackOpenBrowser();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Toasts.Info(Loc.Get("Update.SelfUpdate.Cancel"));
+                try
+                {
+                    var tmpDir = Path.Combine(Path.GetTempPath(), "WindroseUpdate");
+                    if (Directory.Exists(tmpDir)) Directory.Delete(tmpDir, true);
+                }
+                catch { }
+            }
+            finally
+            {
+                IsDownloadingUpdate = false;
+                UpdateDownloadProgress = 0;
+                _downloadCts?.Dispose();
+                _downloadCts = null;
+            }
+        }
+        else
+        {
+            FallbackOpenBrowser();
+        }
+    }
+
+    [RelayCommand]
+    private void CancelUpdateDownload()
+    {
+        _downloadCts?.Cancel();
+    }
+
+    private void FallbackOpenBrowser()
+    {
+        var url = _pendingDownloadUrl ?? _pendingReleaseUrl;
         if (string.IsNullOrWhiteSpace(url)) return;
         try
         {
