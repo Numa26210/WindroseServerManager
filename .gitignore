@@ -3,6 +3,8 @@ bin/
 obj/
 out/
 publish/
+publish_output/
+artifacts/
 
 # VS / Rider
 .vs/
@@ -30,8 +32,26 @@ appsettings.*.local.json
 secrets.json
 
 # Distribution
-artifacts/
 *.nupkg
+*.zip
+*.exe
 
-# Legacy (pre-Avalonia, nur lokal aufbewahrt)
+# Legacy
 archive/
+
+# AI tool artifacts — never commit these
+.claude/
+.claude-flow/
+.opencode/
+.planning/
+.swarm/
+.mcp.json
+opencode.jsonc
+CLAUDE.md
+config.json
+ruvector.db
+graphify-out/
+tools/
+windrose-upstream-redirects.json
+RELEASE_NOTES_*.md
+2026-*.md
