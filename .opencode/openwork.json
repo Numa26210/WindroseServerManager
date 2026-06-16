@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "WindroseServerManager",
+    "createdAt": 1779221119380,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "C:\\Users\\grose\\Desktop\\Discord Bot\\WindroseServerManager"
+  ],
+  "reload": null,
+  "channels": {
+    "telegram": {
+      "botToken": "8645658092:AAG24QUab5uSVLKPT5whWMSU3U7zkXuhV58",
+      "allowedUsers": ["1796310324"] 
+    }
+  }
+}

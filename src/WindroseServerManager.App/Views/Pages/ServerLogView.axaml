@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WindroseServerManager.App.ViewModels"
+             xmlns:svc="using:WindroseServerManager.App.Services"
+             x:Class="WindroseServerManager.App.Views.Pages.ServerLogView"
+             x:DataType="vm:ServerLogViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+        <TextBlock Classes="page-title" Text="{DynamicResource ServerLog.Title}" />
+        <TextBlock Classes="caption muted" Text="{DynamicResource ServerLog.Subtitle}" Margin="0,4,0,20" />
+
+        <Border Classes="card" MinHeight="420">
+            <Grid RowDefinitions="Auto,Auto,Auto,*">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+                    <TextBlock Grid.Column="0" Classes="section-header" Text="{DynamicResource ServerControl.LiveLog}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                        <TextBlock Classes="caption" Text="{DynamicResource ServerControl.Buffer}" VerticalAlignment="Center" />
+                        <ComboBox ItemsSource="{Binding LogBufferSizeOptions}" SelectedItem="{Binding LogBufferSize}" Width="90" />
+                        <Button Classes="subtle" Content="{DynamicResource ServerControl.LogFolder}" Command="{Binding OpenLogFolderCommand}" />
+                        <Button Classes="subtle" Content="{DynamicResource ServerControl.Export}" Command="{Binding ExportLogCommand}" />
+                        <Button Classes="subtle" Content="{DynamicResource ServerControl.Clear}" Command="{Binding ClearLogCommand}" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                    <TextBox Grid.Column="0" Text="{Binding SearchQuery}"
+                             PlaceholderText="{DynamicResource ServerControl.SearchLog}" />
+                    <TextBlock Grid.Column="1" Classes="caption" VerticalAlignment="Center" Margin="10,0,0,0"
+                               Text="{Binding FilteredLinesDisplay}" />
+                </Grid>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6" Margin="0,0,0,8">
+                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.All}" IsChecked="{Binding IsAllFilter}" />
+                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.InfoPlus}" IsChecked="{Binding IsInfoPlusFilter}" />
+                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.WarningPlus}" IsChecked="{Binding IsWarningPlusFilter}" />
+                    <RadioButton GroupName="LogFilter" Content="{DynamicResource ServerControl.Filter.ErrorOnly}" IsChecked="{Binding IsErrorOnlyFilter}" />
+                </StackPanel>
+                <ScrollViewer Grid.Row="3" svc:AutoScrollBehavior.IsEnabled="True">
+                    <ItemsControl ItemsSource="{Binding FilteredLog}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Classes="log-line"
+                                           Text="{Binding}"
+                                           Foreground="{Binding ., Converter={x:Static vm:LogLineToBrushConverter.Instance}}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </StackPanel>
+    </ScrollViewer>
+</UserControl>

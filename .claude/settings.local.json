@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" \"https://api.github.com/repos/HumanGenome/WindrosePlus/releases/latest\")",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" \"https://api.github.com/repos/windrose-plus/windrose-plus/releases/latest\")",
+      "Bash(curl -s \"https://api.github.com/repos/HumanGenome/WindrosePlus/releases/latest\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('tag:', d.get\\('tag_name'\\)\\); print\\('prerelease:', d.get\\('prerelease'\\)\\); print\\('draft:', d.get\\('draft'\\)\\); print\\('assets:'\\); [print\\(f'  - {a[\\\\\"name\\\\\"]} \\({a[\\\\\"size\\\\\"]} bytes, digest={a.get\\(\\\\\"digest\\\\\",\\\\\"NONE\\\\\"\\)}\\)'\\) for a in d.get\\('assets',[]\\)]\")",
+      "Bash(npx @claude-flow/cli@latest daemon start)",
+      "Bash(claude mcp *)",
+      "Bash(npx ruflo@latest *)",
+      "Bash(dotnet test *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'Ruflo audit: correctifs critiques sécurité + perf + tests' --body ' *)",
+      "Bash(where gh.exe)",
+      "Bash('C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe' pr create --title 'Ruflo audit: correctifs critiques sécurité + perf + tests' --body ' *)",
+      "Bash(cmd.exe *)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c/Users/grose/AppData/Local/**)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1)",
+      "Bash(export PATH=\"/c/Program Files/GitHub CLI:$PATH\")",
+      "Bash(gh release *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "claude-flow"
+  ]
+}

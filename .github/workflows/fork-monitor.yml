@@ -1,0 +1,54 @@
+name: Fork Monitor
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch open issues and PRs from upstream forks
+        id: fetch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "### Fork Monitor Report — $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+
+          # Manuel's fork
+          echo "## ManuelStaggl/WindroseServerManager" >> $GITHUB_STEP_SUMMARY
+          echo "### Open Issues" >> $GITHUB_STEP_SUMMARY
+          gh issue list -R ManuelStaggl/WindroseServerManager --state open --json number,title,updatedAt,url --jq '.[] | "- [#\(.number)](\(.url)) \(.title) (updated: \(.updatedAt))"' >> $GITHUB_STEP_SUMMARY || echo "No issues" >> $GITHUB_STEP_SUMMARY
+          echo "### Open PRs" >> $GITHUB_STEP_SUMMARY
+          gh pr list -R ManuelStaggl/WindroseServerManager --state open --json number,title,author,updatedAt,url --jq '.[] | "- [#\(.number)](\(.url)) \(.title) — @\(.author.login) (updated: \(.updatedAt))"' >> $GITHUB_STEP_SUMMARY || echo "No PRs" >> $GITHUB_STEP_SUMMARY
+
+          # Numa26210's own fork
+          echo "## Numa26210/WindroseServerManager" >> $GITHUB_STEP_SUMMARY
+          echo "### Open Issues" >> $GITHUB_STEP_SUMMARY
+          gh issue list -R Numa26210/WindroseServerManager --state open --json number,title,updatedAt,url --jq '.[] | "- [#\(.number)](\(.url)) \(.title) (updated: \(.updatedAt))"' >> $GITHUB_STEP_SUMMARY || echo "No issues" >> $GITHUB_STEP_SUMMARY
+          echo "### Open PRs" >> $GITHUB_STEP_SUMMARY
+          gh pr list -R Numa26210/WindroseServerManager --state open --json number,title,author,updatedAt,url --jq '.[] | "- [#\(.number)](\(.url)) \(.title) — @\(.author.login) (updated: \(.updatedAt))"' >> $GITHUB_STEP_SUMMARY || echo "No PRs" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create or update monitoring issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPORT=$(cat $GITHUB_STEP_SUMMARY)
+
+          EXISTING=$(gh issue list -R Numa26210/WindroseServerManager \
+            --label fork-monitor --state open --json number -q '.[0].number' 2>/dev/null)
+
+          if [ -n "$EXISTING" ]; then
+            echo "Updating existing monitor issue #$EXISTING"
+            gh issue comment "$EXISTING" -R Numa26210/WindroseServerManager \
+              --body "$REPORT" 2>/dev/null || true
+          else
+            echo "Creating new monitor issue"
+            gh issue create -R Numa26210/WindroseServerManager \
+              --title "Fork Monitor Report — $(date -u '+%Y-%m-%d')" \
+              --label fork-monitor \
+              --body "$REPORT" 2>/dev/null || true
+          fi

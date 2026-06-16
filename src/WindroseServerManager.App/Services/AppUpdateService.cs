@@ -137,7 +137,10 @@ public sealed class AppUpdateService : IAppUpdateService
         if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
             return null;
 
+        string? zipUrl = null;
+        string? exeUrl = null;
         string? anyDownload = null;
+
         foreach (var asset in assets.EnumerateArray())
         {
             var name = asset.TryGetProperty("name", out var n) ? n.GetString() : null;
@@ -146,14 +149,24 @@ public sealed class AppUpdateService : IAppUpdateService
 
             anyDownload ??= url;
 
-            // Installer-Asset bevorzugen (Setup*.exe).
+            // Prefer portable ZIP for silent in-app self-update
+            if (!string.IsNullOrWhiteSpace(name) &&
+                name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) &&
+                name.Contains("win-x64", StringComparison.OrdinalIgnoreCase))
+            {
+                zipUrl = url;
+            }
+
+            // Setup.exe as fallback only
             if (!string.IsNullOrWhiteSpace(name) &&
                 name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) &&
                 name.Contains("setup", StringComparison.OrdinalIgnoreCase))
             {
-                return url;
+                exeUrl = url;
             }
         }
-        return anyDownload;
+
+        // ZIP first (silent self-update), Setup.exe fallback, then anything
+        return zipUrl ?? exeUrl ?? anyDownload;
     }
 }
