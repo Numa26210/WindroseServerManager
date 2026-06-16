@@ -318,7 +318,7 @@ public sealed class WindrosePlusService : IWindrosePlusService
                 $"{logLabel} archive unavailable: no download URL and no cached copy at {cachePath}.");
         }
 
-        var tmpPath = cachePath + ".tmp";
+        var tmpPath = cachePath + ".download";
         try
         {
             using var http = _httpFactory.CreateClient(HttpClientName);
