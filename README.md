@@ -6,12 +6,21 @@ A Windows desktop app (Avalonia / .NET 9) that bundles SteamCMD setup, server co
 
 > **This is a community fork** of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained by [Numa26210](https://github.com/Numa26210) with additional features and security fixes.
 
-**Status: Stable · v1.7.0**
+**Status: Stable · v1.7.1**
 
-![Version](https://img.shields.io/badge/version-1.7.0-success)
+![Version](https://img.shields.io/badge/version-1.7.1-success)
 ![Tests](https://img.shields.io/badge/tests-268%20passing-brightgreen)
 
 > The UI ships in **English and German** with auto-detection from the Windows language setting.
+
+---
+
+## What's new in v1.7.1
+
+### 🛡️ Windows Defender False-Positive Fix
+- **Renamed Windrose+ temporary download file** from `.zip.tmp` to `.zip.download` during transfer — eliminates the `Trojan:Win32/Suschil!rfn` false positive triggered by Windows Defender's heuristic scanner on unsigned `.tmp` archives (fixes [#9](https://github.com/Numa26210/WindroseServerManager/issues/9))
+- The SHA-256 digest verification step is unaffected — integrity is still enforced before extraction
+- Submitted the file hash to [Microsoft Security Intelligence](https://www.microsoft.com/en-us/wdsi/filesubmission) for signature correction on their end
 
 ---
 
@@ -179,6 +188,9 @@ A fully integrated Discord bot running as a background service alongside the Ava
 ---
 
 ## Roadmap
+
+### v1.7.1 — AV False-Positive Fix ✅ *released*
+- 🛡️ Renamed Windrose+ temp download file from `.zip.tmp` to `.zip.download` (fixes Windows Defender `Suschil!rfn` false positive — [#9](https://github.com/Numa26210/WindroseServerManager/issues/9))
 
 ### v1.6.0 — Quality of Life ✅ *released*
 - 🔧 Windrose+ toggle on/off + version pinning (no more forced upgrades)
@@ -356,12 +368,12 @@ No separate .NET install required — the self-contained build ships everything.
 ## Install
 
 ### Option A: Installer (recommended)
-1. Download `WindroseServerManager-v1.7.0-Setup.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-v1.7.1-Setup.exe` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Run the installer, follow the prompts
 3. Launch from the Start Menu
 
 ### Option B: Portable ZIP
-1. Download `WindroseServerManager-v1.7.0-win-x64.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
+1. Download `WindroseServerManager-v1.7.1-win-x64.zip` from the [Releases page](https://github.com/Numa26210/WindroseServerManager/releases)
 2. Extract anywhere
 3. Run `WindroseServerManager.exe`
 

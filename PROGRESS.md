@@ -1,12 +1,19 @@
 # Windrose Server Manager — Progress
 
-**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.7.0**
+**Fork by [Numa26210](https://github.com/Numa26210) · Status: Active · Current: v1.7.1**
 
 > This is a community fork of [ManuelStaggl/WindroseServerManager](https://github.com/ManuelStaggl/WindroseServerManager), actively maintained and extended beyond the upstream.
 
 ---
 
-## ✅ Completed (v1.0.0 → v1.7.0)
+## ✅ Completed (v1.0.0 → v1.7.1)
+
+### v1.7.1 — Windows Defender False-Positive Fix
+- [x] Renamed Windrose+ temporary download file from `.zip.tmp` to `.zip.download` during transfer
+- [x] Eliminates `Trojan:Win32/Suschil!rfn` false positive triggered by Windows Defender heuristic scanner on unsigned `.tmp` archives (fixes [#9](https://github.com/Numa26210/WindroseServerManager/issues/9))
+- [x] SHA-256 digest verification step unaffected — integrity still enforced before extraction
+- [x] Submitted file hash to Microsoft Security Intelligence portal for upstream signature correction
+- [x] GitHub release v1.7.1 published
 
 ### v1.7.0 — Automation, CLI & Self-Update
 - [x] In-app self-update: "Download" downloads ZIP, applies update, restarts app
