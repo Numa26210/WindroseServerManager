@@ -568,9 +568,10 @@ public sealed class WindrosePlusService : IWindrosePlusService
             return false;
         }
 
+        var ps = File.Exists(@"C:\Program Files\PowerShell\7\pwsh.exe") ? "pwsh" : "powershell";
         var psi = new System.Diagnostics.ProcessStartInfo
         {
-            FileName = "powershell",
+            FileName = ps,
             Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{buildPak}\" -ServerDir \"{serverDirFull}\" -RemoveStalePak",
             WorkingDirectory = serverDirFull,
             UseShellExecute = false,
